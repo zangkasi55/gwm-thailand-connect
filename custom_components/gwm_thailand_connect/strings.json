@@ -1,0 +1,76 @@
+{
+  "title": "GWM Thailand Connect",
+  "config": {
+    "step": {
+      "material": {
+        "title": "Import private Thai app material",
+        "description": "Generate the private JSON locally from your own reviewed My GWM Thailand 3.0.8 APK. Do not upload the APK or this JSON to GitHub. It is stored privately in your Home Assistant.",
+        "data": {"app_material": "Private provisioning JSON"}
+      },
+      "authentication": {
+        "title": "Choose how to sign in",
+        "menu_options": {
+          "code_login": "Verification code (SMS/email; no password)",
+          "password_login": "Official-app account password"
+        }
+      },
+      "code_login": {
+        "title": "Sign in with a verification code",
+        "description": "Use the contact linked to the official Thai app. There is no account-password or vehicle-PIN field. A code is requested only after you confirm the sign-in warning.",
+        "data": {"account": "Linked email or mobile number"}
+      },
+      "password_login": {
+        "title": "Sign in with your official-app password",
+        "description": "This is the account login password, not the vehicle security PIN. GWM may require additional verification.",
+        "data": {"account": "Linked email or mobile number", "password": "Official-app account password"}
+      },
+      "consent": {
+        "title": "Allow this GWM account sign-in",
+        "description": "Signing in can replace another app session. Prefer a dedicated shared-vehicle account. Continue only for an account you own or are authorized to use. This does not send a vehicle command or accept updated agreements for you.",
+        "data": {"confirm": "I understand and want to continue"}
+      },
+      "verification": {
+        "title": "Enter the verification code",
+        "description": "Enter the SMS/email code only here. Codes are used once and are not stored. Delivery can be delayed; do not repeatedly request codes.",
+        "data": {"verification_code": "Verification code"}
+      },
+      "initialization": {
+        "title": "Finish certificate setup",
+        "description": "Account sign-in was accepted. The session, encrypted key and any returned certificate are saved privately. Retrying uses that material, not another account login. Validation reason: {reason}."
+      },
+      "new_device": {
+        "title": "Recover this integration's device identity",
+        "description": "GWM reports an existing device certificate without returning its data. Explicitly create and normally verify a fresh integration device. Old tokens are not reused with the new device. This does not revoke your phone certificate, but signing in can replace the phone app session.",
+        "data": {"confirm": "Create a new integration device and request normal verification"}
+      }
+    },
+    "error": {
+      "invalid_material": "The private app material could not be validated. Use the reviewed APK and keep the generated JSON private.",
+      "material_storage_failed": "Home Assistant could not save private setup state. Check storage permissions and free space before continuing; no vehicle command was sent.",
+      "invalid_account": "Check the linked contact and selected sign-in method.",
+      "authentication_failed": "GWM did not accept this step. Complete official-app account recovery or human-verification prompts if required. Do not use the vehicle PIN as an account password.",
+      "confirmation_required": "Explicit confirmation is required. No sign-in code or command was requested.",
+      "invalid_code": "The verification code was rejected or expired.",
+      "rate_limited": "GWM rate-limited this request. Wait before trying again; no automatic retry was made."
+    },
+    "abort": {
+      "already_configured": "This account is already configured. Use its reconfigure or reauthentication flow.",
+      "reauth_successful": "The account was reconnected successfully.",
+      "invalid_flow_state": "Restart setup to select the account sign-in method."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling and guarded remote controls",
+        "description": "Controls are off by default. The vehicle PIN is separate from account sign-in. Each console command requires confirmation and current manufacturer capability checks. Do not enable a feature absent from your car's official capabilities.",
+        "data": {
+          "poll_interval": "Cloud polling interval (seconds)",
+          "enable_remote_commands": "Enable guarded remote commands",
+          "security_pin": "Vehicle security PIN (leave empty to retain an existing PIN)"
+        }
+      }
+    },
+    "error": {"pin_required": "A vehicle security PIN is required for remote commands. Enter it only in this private form."}
+  }
+}

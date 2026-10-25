@@ -1,0 +1,12 @@
+{
+  "name": "gwm-thailand-connect-development",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/frontend/*.test.mjs",
+    "docs:screenshots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2"
+  }
+}

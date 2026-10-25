@@ -1,0 +1,64 @@
+thailand_control:
+  name: Guarded Thai vehicle control
+  description: Requires owner opt-in, private vehicle PIN, current vehicle capabilities and explicit confirmation. Acceptance is not completion.
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: gwm_thailand_connect
+    action:
+      required: true
+      selector:
+        select:
+          options:
+            - lock
+            - unlock
+            - flash_lights
+            - horn
+            - horn_and_lights
+            - tailgate_open
+            - tailgate_close
+            - windows_close
+            - sunroof_close
+            - climate_on
+            - climate_off
+            - purifier_on
+            - purifier_off
+            - seat_ventilation
+            - seats_off
+            - location_on
+            - location_off
+    confirmed:
+      required: true
+      default: false
+      selector:
+        boolean:
+    temperature:
+      default: 24
+      selector:
+        number:
+          min: 16
+          max: 32
+          step: 1
+    duration_minutes:
+      default: 10
+      selector:
+        number:
+          min: 5
+          max: 30
+          step: 1
+    front_left_level:
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 3
+          step: 1
+    front_right_level:
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 3
+          step: 1

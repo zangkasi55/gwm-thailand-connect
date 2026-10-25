@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a reproducible, non-sensitive integration problem
+body:
+  - type: markdown
+    attributes:
+      value: "Never attach credentials, contacts, VINs, locations, OTPs, PINs, tokens, certificates/keys, app material, APKs, raw cloud responses or HA backups."
+  - type: input
+    id: version
+    attributes:
+      label: Integration and Home Assistant versions
+    validations:
+      required: true
+  - type: input
+    id: vehicle
+    attributes:
+      label: Thai market model / trim (no VIN)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps, expected behavior and actual result
+    validations:
+      required: true
+  - type: input
+    id: api_code
+    attributes:
+      label: Sanitized numeric API code, if known
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: I reviewed this report and attachments and removed all account, vehicle, location and secret data.
+          required: true

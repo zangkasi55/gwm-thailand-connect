@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GWM Thailand Connect — synthetic documentation demo</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#061120;color:#dceaff;font:16px/1.5 system-ui,sans-serif}
+  .demo-banner{padding:13px 24px;background:#593713;border-bottom:2px solid #ffbc52;color:#ffe2ae;text-align:center;font-weight:700;letter-spacing:1px}
+  main{max-width:1260px;margin:28px auto;padding:0 24px}.form{max-width:580px;margin:45px auto;border:1px solid #316c99;border-radius:16px;background:#10243a;overflow:hidden;box-shadow:0 16px 50px #0005}
+  header{padding:20px 25px;background:#173452;font-size:22px;font-weight:600}.body{padding:26px}.body p{color:#b4cbe0;margin-top:0}
+  label{display:block;margin:22px 0 8px;color:#dceaff}input:not([type=checkbox]){width:100%;padding:14px;border:1px solid #5084b0;border-radius:8px;background:#071b2e;color:#f0f7ff;font:inherit}
+  .help{color:#91afca;font-size:13px;margin:8px 0 20px}.choice{display:block;padding:18px;margin:12px 0;border:1px solid #389dff;border-radius:10px;background:#073561;color:#ddecff;text-decoration:none}
+  footer{padding:18px 26px;border-top:1px solid #2b526f;text-align:right}button{padding:11px 23px;border:0;border-radius:8px;color:white;background:#0875c9;font:inherit}button:disabled{opacity:.5}
+  .note{padding:15px;border:1px solid #ac7a3a;border-radius:8px;background:#3b2d20;margin:18px 0;color:#ffe0ac}
+  .check{display:flex;align-items:flex-start;gap:12px}input[type=checkbox]{width:20px;height:20px;margin:4px 0;accent-color:#39afff}
+  .illustration{max-width:900px;margin:25px auto;color:#8faecc;text-align:center;font-size:13px}
+  #icon{display:none}body.icon-only{background:transparent}.icon-only .demo-banner,.icon-only main,.icon-only .illustration{display:none}.icon-only #icon{display:block}
+</style>
+<div class="demo-banner">DEMONSTRATION ONLY · SYNTHETIC DATA · NO VEHICLE OR ACCOUNT CONNECTION</div>
+<main id="content"></main>
+<div class="illustration">Illustrative setup screens for the manual. Actual Home Assistant styling can vary. No real credentials, vehicle identifiers, locations, or original car artwork are used.</div>
+<canvas id="icon" width="256" height="256"></canvas>
+<script type="module">
+  import "../../custom_components/gwm_thailand_connect/frontend/gwm-thailand-card.js";
+
+  const screen = new URLSearchParams(location.search).get("screen") || "method";
+  const content = document.querySelector("#content");
+  const form = (title, body, button="Submit") => `<section class="form"><header>${title}</header><div class="body">${body}</div><footer><button disabled>${button} — demo only</button></footer></section>`;
+  const contact = `<label>Linked email or mobile number *</label><input value="demo@example.invalid" readonly><div class="help">Synthetic example contact. Never post your real contact or private provisioning file in an issue.</div>`;
+  const forms = {
+    material: form("Import private Thai app material", `<p>Generate the private provisioning JSON locally from your own reviewed official APK.</p><label>Private provisioning JSON *</label><input value="app-material.example.json (illustration only)" readonly><div class="note">The APK, JSON, application secrets and private keys are NOT published or included in the release.</div>`),
+    method: form("Choose how to sign in", `<p>Choose the method first. Code sign-in never displays an account-password field.</p><a class="choice" href="?screen=code">Verification code (SMS/email; no password) →</a><a class="choice" href="?screen=password">Official-app account password →</a>`),
+    code: form("Sign in with a verification code", `<p>Use the contact already linked to the official Thai app. No account password or vehicle PIN is needed.</p>${contact}<div class="note">No password field is rendered in this method. A code is requested only after the next explicit consent step.</div>`),
+    password: form("Sign in with your official-app password", `<p>This is your account login password, not the vehicle security PIN or a verification code.</p>${contact}<label>Official-app account password *</label><input type="password" placeholder="Required only in this method" readonly><div class="help">The manual never contains a real password.</div>`),
+    consent: form("Allow this GWM account sign-in", `<p>Signing in may replace another phone-app session. Prefer a dedicated shared-vehicle account.</p><div class="note">This does not accept updated GWM agreements or send a physical vehicle command.</div><label class="check"><input type="checkbox" disabled><span>I understand and want to continue</span></label>`),
+    verification: form("Enter the verification code", `<p>Enter the SMS/email code only in Home Assistant. It is used once and never stored.</p><label>Verification code *</label><input placeholder="Enter your code privately — no sample code shown" readonly><div class="help">Delivery can be delayed. Do not repeatedly request codes or paste codes in chat or issues.</div>`),
+    options: form("Polling and guarded remote controls", `<label>Cloud polling interval (seconds)</label><input value="60" readonly><label class="check"><input type="checkbox" disabled><span>Enable guarded remote commands</span></label><label>Vehicle security PIN</label><input type="password" placeholder="Private; separate from account sign-in" readonly><div class="note">Default is OFF. Capability checks and explicit command confirmation are still required when enabled.</div>`, "Save"),
+  };
+  if (screen === "icon") {
+    document.body.classList.add("icon-only");
+    const ctx = document.querySelector("#icon").getContext("2d");
+    ctx.fillStyle="#09315c";ctx.beginPath();ctx.roundRect(0,0,256,256,46);ctx.fill();
+    ctx.strokeStyle="#75d5ff";ctx.lineWidth=9;ctx.lineJoin="round";
+    ctx.beginPath();ctx.moveTo(55,150);ctx.lineTo(70,105);ctx.quadraticCurveTo(75,91,94,91);ctx.lineTo(165,91);ctx.quadraticCurveTo(181,91,187,105);ctx.lineTo(201,150);ctx.lineTo(201,181);ctx.lineTo(55,181);ctx.closePath();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(72,137);ctx.lineTo(183,137);ctx.stroke();ctx.fillStyle="#eaf7ff";ctx.fillRect(67,156,27,9);ctx.fillRect(162,156,27,9);
+    ctx.strokeStyle="#eaf7ff";ctx.beginPath();ctx.moveTo(105,50);ctx.lineTo(105,66);ctx.moveTo(132,50);ctx.lineTo(132,66);ctx.moveTo(96,67);ctx.lineTo(141,67);ctx.lineTo(141,74);ctx.quadraticCurveTo(119,94,96,74);ctx.closePath();ctx.stroke();
+  } else if (forms[screen]) {
+    content.innerHTML = forms[screen];
+  } else {
+    const card = document.createElement("gwm-thailand-card");
+    content.appendChild(card);
+    card.setConfig({type:"custom:gwm-thailand-card"});
+    const values = {
+      soc:["55","%"],range_km:["120","km"],odometer_km:["12345","km"],interior_temperature_c:["unknown","°C"],
+      charging_status:["disconnected"],remaining_charging_time_min:["0","min"],lock_open:["off"],ac_active:["off"],
+      door_front_driver_open:["off"],door_front_passenger_open:["off"],door_rear_driver_side_open:["off"],
+      door_rear_passenger_side_open:["off"],trunk_open:["off"],window_front_left_open:["off"],
+      window_front_right_open:["off"],window_rear_left_open:["off"],window_rear_right_open:["off"],
+      tire_pressure_front_left_kpa:["220","kPa"],tire_pressure_front_right_kpa:["220","kPa"],
+      tire_pressure_rear_left_kpa:["220","kPa"],tire_pressure_rear_right_kpa:["220","kPa"],
+      command_status:["No command has run — synthetic demonstration"],
+    };
+    const specs = [
+      ["lock","Lock doors","locks"],["unlock","Unlock doors","locks"],
+      ["tailgate_open","Open tailgate","tailgate"],["tailgate_close","Close tailgate","tailgate"],
+      ["windows_close","Close all windows","windows"],["sunroof_close","Close sunroof","sunroof"],
+      ["climate_on","A/C on","climate"],["climate_off","A/C off","climate"],
+      ["purifier_on","Air purifier on","climate"],["purifier_off","Air purifier off","climate"],
+      ["seat_ventilation","Set front-seat ventilation","seats"],["seats_off","Seat ventilation off","seats"],
+      ["flash_lights","Flash lights","find"],["horn","Sound horn","find"],["horn_and_lights","Horn and lights","find"],
+      ["location_on","Location reporting on","location"],["location_off","Location reporting off","location"],
+    ];
+    const controls = {status:"advertised",enabled:screen==="confirmation",actions:specs.map(([action,label,group])=>({action,label,group}))};
+    const states = Object.fromEntries(Object.entries(values).map(([signal,[state,unit]])=>{
+      const entity_id=(["on","off"].includes(state)?"binary_sensor.":"sensor.")+"demo_"+signal;
+      return [entity_id,{entity_id,state,attributes:{gwm_signal:signal,friendly_name:"Synthetic "+signal,unit_of_measurement:unit,...(signal==="soc"?{gwm_controls:controls,gwm_reported_at:"2026-01-01T00:00:00Z"}:{})}}];
+    }));
+    const registry = Object.keys(states).map(entity_id=>({entity_id,device_id:"synthetic-demo-device",platform:"gwm_thailand_connect"}));
+    card.hass={connected:true,states,services:{gwm_thailand_connect:{thailand_control:{}}},callWS:async()=>registry,callService:async()=>{throw new Error("Demonstration only: no service is connected");}};
+    await Promise.resolve();
+    if(screen==="confirmation"){
+      card._pending={action:"unlock",label:"Unlock doors",device:"synthetic-demo-device"};
+      card._render();
+    }
+  }
+  document.body.dataset.ready="true";
+</script>
+</html>

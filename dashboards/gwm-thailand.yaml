@@ -1,0 +1,29 @@
+title: GWM Thailand
+views:
+  - title: Overview
+    path: overview
+    icon: mdi:car-electric
+    type: panel
+    cards:
+      - type: custom:gwm-thailand-card
+  - title: All readings
+    path: details
+    icon: mdi:format-list-bulleted
+    cards:
+      - type: markdown
+        content: |
+          # GWM Thailand Connect
+          Cached manufacturer-cloud readings, not proof the vehicle is online now.
+          Unknown or unavailable does not mean locked, closed, off or zero.
+          [Integration settings](/config/integrations/integration/gwm_thailand_connect)
+      - type: markdown
+        title: Reported values
+        content: |
+          {% set ids = integration_entities('gwm_thailand_connect') | sort | list %}
+          | Entity | Reported value |
+          | :--- | :--- |
+          {% for entity in ids %}
+          | {{ (state_attr(entity, 'friendly_name') or entity) | replace('|', '\\|') }} | {% if states(entity) in ['unknown', 'unavailable', 'none', 'None', ''] %}Not reported{% else %}{{ states(entity) | replace('|', '\\|') }} {{ state_attr(entity, 'unit_of_measurement') or '' }}{% endif %} |
+          {% endfor %}
+          {% if not ids %}Finish account setup to discover your vehicle. No sample readings are shown.{% endif %}
+          Last page evaluation: {{ now().strftime('%Y-%m-%d %H:%M:%S %Z') }}.

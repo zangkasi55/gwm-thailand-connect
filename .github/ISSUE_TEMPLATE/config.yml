@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/zangkasi55/gwm-thailand-connect/security/advisories/new
+    about: Do not post sensitive security details or owner data in a public issue.
