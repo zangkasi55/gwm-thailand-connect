@@ -46,6 +46,14 @@ Requires **Home Assistant 2026.10.0 or later**. Back up Home Assistant before in
 
 Manual installation from the release archive is also documented. A HACS custom repository can be installed before default-store inclusion; it is **not** evidence of HACS or Home Assistant endorsement.
 
+## Release and catalog status
+
+- **Public release:** [v0.1.0](https://github.com/zangkasi55/gwm-thailand-connect/releases/tag/v0.1.0), including an installable source-only ZIP and SHA-256 checksums.
+- **HACS / Home Assistant custom-integration catalog:** [submission PR #12628](https://github.com/hacs/default/pull/12628). Submitted for maintainer review; **not yet approved or included by default**. Install through a custom repository in the meantime.
+- **Built-in Home Assistant Core:** not submitted. [Core's requirements](https://contributors.home-assistant.io/core/integrations/create/#does-it-belong-in-core) include a separately published PyPI API library, a minimal initial integration and Bronze-quality compliance. This repository is a custom integration, not a claim of Core inclusion.
+
+The release was published after the repository's Checks, HACS validation (without ignores), and official Hassfest workflows passed.
+
 ## Documentation
 
 - [Illustrated installation manual](docs/installation.md): HACS/manual installation, private provisioning, code/password setup and dashboard.
