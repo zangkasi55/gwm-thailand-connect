@@ -67,7 +67,8 @@
         "data": {
           "poll_interval": "Cloud polling interval (seconds)",
           "enable_remote_commands": "Enable guarded remote commands",
-          "security_pin": "Vehicle security PIN (leave empty to retain an existing PIN)"
+          "security_pin": "Vehicle security PIN (leave empty to retain an existing PIN)",
+          "record_journeys": "Record private journey observations (rolling seven days only)"
         }
       }
     },

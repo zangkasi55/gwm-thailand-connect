@@ -6,6 +6,12 @@ views:
     type: panel
     cards:
       - type: custom:gwm-thailand-card
+  - title: Journeys & parking
+    path: journeys
+    icon: mdi:map-marker-path
+    type: panel
+    cards:
+      - type: custom:gwm-journey-card
   - title: All readings
     path: details
     icon: mdi:format-list-bulleted

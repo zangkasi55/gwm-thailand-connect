@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Haval journeys — synthetic offline demonstration</title>
+<style>
+  body{margin:0;background:#040f1e;color:#e7f0ff;font:15px/1.5 system-ui,sans-serif}
+  .banner{background:#583717;color:#ffe0ac;border-bottom:2px solid #d69b49;padding:14px 25px;text-align:center;font-weight:700;letter-spacing:.7px}
+  main{max-width:1400px;padding:25px;margin:auto}
+  footer{text-align:center;color:#9ab7d4;padding:5px 25px 25px;font-size:12px}
+</style>
+<div class="banner">SYNTHETIC DEMONSTRATION · FICTIONAL COORDINATES / EVENTS · NO ACCOUNT OR VEHICLE CONNECTION</div>
+<main><gwm-journey-card></gwm-journey-card></main>
+<footer>Production classifier and card, synthetic observations. Local OpenStreetMap-derived data © OpenStreetMap contributors / ODbL; no vehicle location sent to third parties.</footer>
+<script type="module">
+  import "../../custom_components/gwm_thailand_connect/frontend/gwm-journey-card.js";
+  const fixture=await (await fetch("./journey-fixture.json")).json();
+  const mode=new URLSearchParams(location.search).get("mode");
+  const card=document.querySelector("gwm-journey-card");
+  window.__journeyCalls=[];
+  let cleared=false;
+  card.setConfig({type:"custom:gwm-journey-card",map_archive:"/local/gwm-maps/test.pmtiles"});
+  card.hass={
+    connected:true,
+    callWS:async request=>{
+      window.__journeyCalls.push(request);
+      if(request.type==="config/entity_registry/list")return [
+        {platform:"gwm_thailand_connect",device_id:"synthetic-demo-device",entity_id:"sensor.synthetic_soc"},
+      ];
+      if(request.type.endsWith("/clear_journeys")){cleared=true;return {cleared:true};}
+      if(mode==="error")throw new Error("Synthetic permission error: private history is administrator-only");
+      if(mode==="disabled")return {status:"disabled",current:{availability:"cloud_unavailable",position:null},stops:[],doors:[],segments:[]};
+      if(mode==="nogps" || mode==="stale")return {...fixture,status:mode==="stale"?"stale_sample":"location_not_reported",stops:[],segments:[],current:{availability:"stale_sample",position:null}};
+      if(cleared)return {...fixture,stops:[],doors:[],segments:[],movement_events:[],sample_count:0};
+      return fixture;
+    },
+  };
+  await new Promise(resolve=>setTimeout(resolve,0));
+  document.body.dataset.ready="true";
+</script>
+</html>

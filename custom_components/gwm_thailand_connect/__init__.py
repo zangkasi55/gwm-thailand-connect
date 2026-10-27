@@ -28,6 +28,8 @@ from .gwm_client.errors import GwmAuthenticationError, GwmClientError
 from .gwm_client.thailand_controls import THAILAND_CONTROLS
 from .gwm_client.thailand_identity import ThailandIdentityError
 from .gwm_client.thailand_protocol import ThailandProtocolError
+from .journey_storage import journey_store
+from .journey_ws import register_journey_api
 from .storage import account_store
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -92,7 +94,21 @@ def _register_service(hass: HomeAssistant) -> None:
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
+    await _register_frontend(hass)
+    register_journey_api(hass)
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        await journey_store(hass, entry.unique_id or entry.entry_id).start()
     return True
+
+
+async def _register_frontend(hass: HomeAssistant) -> None:
+    lock = hass.data.setdefault(DOMAIN + "_frontend_lock", asyncio.Lock())
+    async with lock:
+        if not hass.data.get(DOMAIN + "_frontend_ready"):
+            await hass.http.async_register_static_paths([
+                StaticPathConfig(FRONTEND_PATH, str(Path(__file__).parent / "frontend"), cache_headers=False),
+            ])
+            hass.data[DOMAIN + "_frontend_ready"] = True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: GwmConfigEntry) -> bool:
@@ -108,13 +124,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: GwmConfigEntry) -> bool:
     try:
         await coordinator.async_config_entry_first_refresh()
         entry.runtime_data = coordinator
-        lock = hass.data.setdefault(DOMAIN + "_frontend_lock", asyncio.Lock())
-        async with lock:
-            if not hass.data.get(DOMAIN + "_frontend_ready"):
-                await hass.http.async_register_static_paths([
-                    StaticPathConfig(FRONTEND_PATH, str(Path(__file__).parent / "frontend"), cache_headers=False),
-                ])
-                hass.data[DOMAIN + "_frontend_ready"] = True
+        await _register_frontend(hass)
+        register_journey_api(hass)
         _register_service(hass)
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
         for command in await api.store.commands():
@@ -140,3 +151,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: GwmConfigEntry) -> bool
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     if entry.unique_id is not None:
         await account_store(hass, entry.unique_id).remove()
+    await journey_store(hass, entry.unique_id or entry.entry_id).remove()

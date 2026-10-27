@@ -3,10 +3,10 @@
   "name": "GWM Thailand Connect",
   "codeowners": ["@zangkasi55"],
   "config_flow": true,
-  "dependencies": ["file_upload", "http"],
+  "dependencies": ["file_upload", "http", "websocket_api"],
   "documentation": "https://github.com/zangkasi55/gwm-thailand-connect",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/zangkasi55/gwm-thailand-connect/issues",
-  "version": "0.1.0"
+  "version": "0.3.0"
 }

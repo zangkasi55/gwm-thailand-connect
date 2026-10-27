@@ -22,6 +22,8 @@ playwright-report/
 *.jks
 *.keystore
 *.har
+*.pmtiles
+*.downloading
 *.log
 .storage/
 private/

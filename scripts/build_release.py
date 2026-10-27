@@ -16,8 +16,8 @@ def main() -> None:
     version = json.loads(
         (root / "custom_components" / "gwm_thailand_connect" / "manifest.json").read_text(encoding="utf-8"),
     )["version"]
-    output = root / "dist"
-    output.mkdir(exist_ok=True)
+    output = root / "dist" / version
+    output.mkdir(parents=True, exist_ok=True)
     archive_path = output / f"gwm-thailand-connect-{version}.zip"
     selected = [
         path for path in files

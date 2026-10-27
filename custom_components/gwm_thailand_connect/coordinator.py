@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import AccountApi
 from .const import DEFAULT_POLL_SECONDS, DOMAIN
 from .gwm_client.errors import GwmApiError, GwmAuthenticationError, GwmClientError
+from .journey_storage import journey_store
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,12 +26,15 @@ class GwmCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             hass, LOGGER, name=DOMAIN, config_entry=entry,
             update_interval=timedelta(seconds=entry.options.get("poll_interval", DEFAULT_POLL_SECONDS)),
         )
+        self.entry = entry
         self.api = api
+        self.history = journey_store(hass, entry.unique_id or entry.entry_id)
+        self.history_error: str | None = None
         self._pollers: dict[str, asyncio.Task[None]] = {}
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            return await self.api.read()
+            data = await self.api.read()
         except GwmAuthenticationError as error:
             raise ConfigEntryAuthFailed("Reconnect through normal account verification; do not use the vehicle PIN") from error
         except GwmClientError as error:
@@ -51,6 +55,15 @@ class GwmCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise UpdateFailed(
                 f"GWM cloud {error.category} during {error.operation}; API code {getattr(error, 'api_code', None)}",
             ) from error
+        try:
+            await self.history.record(
+                data.get("vehicles", []) if self.entry.options.get("record_journeys") is True else [],
+            )
+            self.history_error = None
+        except (OSError, ValueError) as error:
+            self.history_error = "history_storage_failed"
+            LOGGER.warning("Private journey history was not saved: type=%s", type(error).__name__)
+        return data
 
     def vehicle(self, identifier: str) -> dict[str, Any] | None:
         return next((item for item in (self.data or {}).get("vehicles", []) if item["vin"] == identifier), None)

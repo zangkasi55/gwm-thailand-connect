@@ -1,3 +1,7 @@
+import { escapeHtml } from "./shared.js";
+import "./gwm-journey-card.js";
+export { escapeHtml } from "./shared.js";
+
 const UNKNOWN = new Set(["unknown", "unavailable", "none", "None", ""]);
 const SETTINGS = "/config/integrations/integration/gwm_thailand_connect";
 
@@ -8,12 +12,6 @@ export function reportedValue(state) {
 export function binaryLabel(state, on, off) {
   const value = reportedValue(state);
   return value === "on" ? on : value === "off" ? off : "Not reported";
-}
-
-export function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  })[c]);
 }
 
 export function groupVehicleSignals(registry, states) {
@@ -251,6 +249,7 @@ class GwmThailandCard extends HTMLElement {
       <span class="badge">${this._hass.connected && vehicle ? "Cloud readings" : "Waiting for connection"}</span></div></header>
       <nav aria-label="Haval sections">${tabs.map(([tab, icon, label]) =>
         `<button data-tab="${tab}" aria-current="${this._tab === tab}"><ha-icon icon="${icon}"></ha-icon>${label}</button>`).join("")}
+        <a class="settings" style="margin-left:0" href="/gwm-thailand/journeys">Journeys & parking</a>
         ${selectors}<a class="settings" href="${SETTINGS}"><ha-icon icon="mdi:cog-outline"></ha-icon>GWM settings</a></nav>`;
     if (!vehicle) {
       this.shadowRoot.innerHTML = `<style>${CSS}</style><div class="shell">${header}<div class="empty">

@@ -82,7 +82,7 @@ The example dashboard deliberately adds no unguarded actuator entities.
 - No engine start/stop, drive mode, camera, parking-sensor or steering-heat control is invented from a UI label.
 - No charging schedules or direct charging-start/stop writes.
 - No forced vehicle wake.
-- No journey tracing, stop classification or historical door-open timing in this release.
+- Release 0.1.0 has no journey history. The 0.3.0 development build adds [compact OpenStreetMap journey history](journeys.md); it does not reconstruct missed samples or exact ignition/door timing.
 - No bypass of official account challenges, agreements, session conflicts or authorization.
 
 ## Multiple integrations and phone sessions

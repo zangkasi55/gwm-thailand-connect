@@ -24,6 +24,31 @@ The independently authored identity codec in `gwm_client/crypto.py` is structure
 - Architecture/state/sequence diagrams are project-authored Mermaid source.
 - No original owner-provided car artwork or screenshot of a live account is included.
 
+## Offline regional map
+
+The 0.3.0 journey interface uses locally bundled Leaflet (BSD-2-Clause),
+Protomaps Leaflet (BSD-3-Clause) and a separately provisioned OSM-derived vector
+archive. Complete bundled runtime notices are in `frontend/vendor/LICENSES.txt`.
+OSM data/Produced Works must visibly credit OpenStreetMap contributors and comply
+with [ODbL](https://www.openstreetmap.org/copyright). They are not covered by this
+repository's MIT source-code license. No third-party tile requests carry owner
+coordinates. The documentation preview uses fictional positions over generic
+OSM data with visible attribution; it is not an owner screenshot.
+
+The earlier regional-context asset below remains for compatibility; it is not
+mislabelled as the new OpenStreetMap street map.
+
+The bundled `frontend/thailand-basemap.json` is clipped/generalized from Natural
+Earth's public-domain 1:10m countries, roads and populated-places data, covering
+the fixed generic region 96-108 degrees east / 4-23 degrees north. No owner
+location is used to download or generate it.
+
+Made with Natural Earth. See the [public-domain terms](https://www.naturalearthdata.com/about/terms-of-use/).
+Source URLs and SHA-256 fingerprints are embedded in the data asset. This is
+regional geographic context, not a navigation or street/building dataset.
+`scripts/generate_basemap.py` reproduces it locally using Shapely, which is a
+development dependency only; HA does not need Shapely to display the result.
+
 ## Names and trademarks
 
 GWM, Haval, My GWM, Home Assistant, HACS and other names identify interoperability targets and remain the property of their respective owners. No affiliation or endorsement is implied.

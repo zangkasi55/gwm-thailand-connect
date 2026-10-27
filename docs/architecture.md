@@ -12,7 +12,7 @@
 | Entities | Native sensors/binary sensors with strict missing/unknown behavior |
 | Frontend | Dependency-free JavaScript ES module, native custom element, CSS-only vehicle drawing |
 | Tests | pytest, pytest-asyncio, scripted transports, generated synthetic identities; Node test runner |
-| Development only | Ruff, mypy, Playwright screenshot generator |
+| Development only | Ruff, mypy, Playwright screenshot generator, Shapely offline basemap builder |
 | CI | GitHub Actions, Hassfest, HACS validation |
 
 Runtime does not need Node, Playwright, an Android device or an emulator.

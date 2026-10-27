@@ -3,3 +3,4 @@ pytest==9.1.1
 pytest-asyncio==1.4.0
 ruff==0.17.0
 mypy==1.19.1
+shapely>=2.1.2,<3

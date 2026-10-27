@@ -1,0 +1,271 @@
+{
+  "segments": [
+    [
+      {
+        "latitude": 13.74,
+        "longitude": 100.5,
+        "time": "2026-10-27T02:37:47+00:00",
+        "battery": 65.0
+      },
+      {
+        "latitude": 13.74,
+        "longitude": 100.5,
+        "time": "2026-10-27T02:47:47+00:00",
+        "battery": 64.0
+      },
+      {
+        "latitude": 13.741333333333333,
+        "longitude": 100.502,
+        "time": "2026-10-27T02:48:47+00:00",
+        "battery": 63.9
+      },
+      {
+        "latitude": 13.742666666666667,
+        "longitude": 100.504,
+        "time": "2026-10-27T02:49:47+00:00",
+        "battery": 63.8
+      },
+      {
+        "latitude": 13.744,
+        "longitude": 100.506,
+        "time": "2026-10-27T02:50:47+00:00",
+        "battery": 63.7
+      },
+      {
+        "latitude": 13.744,
+        "longitude": 100.506,
+        "time": "2026-10-27T02:51:47+00:00",
+        "battery": 63.6
+      },
+      {
+        "latitude": 13.744,
+        "longitude": 100.506,
+        "time": "2026-10-27T02:57:47+00:00",
+        "battery": 63.0
+      },
+      {
+        "latitude": 13.745333333333333,
+        "longitude": 100.508,
+        "time": "2026-10-27T02:58:47+00:00",
+        "battery": 62.9
+      },
+      {
+        "latitude": 13.746666666666666,
+        "longitude": 100.51,
+        "time": "2026-10-27T02:59:47+00:00",
+        "battery": 62.8
+      },
+      {
+        "latitude": 13.748,
+        "longitude": 100.512,
+        "time": "2026-10-27T03:00:47+00:00",
+        "battery": 62.7
+      },
+      {
+        "latitude": 13.748,
+        "longitude": 100.512,
+        "time": "2026-10-27T03:01:47+00:00",
+        "battery": 62.6
+      },
+      {
+        "latitude": 13.748,
+        "longitude": 100.512,
+        "time": "2026-10-27T03:02:47+00:00",
+        "battery": 62.5
+      }
+    ]
+  ],
+  "stops": [
+    {
+      "id": "2026-10-27T02:37:47+00:00",
+      "position": {
+        "latitude": 13.74,
+        "longitude": 100.5
+      },
+      "start": "2026-10-27T02:37:47+00:00",
+      "last_observed": "2026-10-27T02:47:47+00:00",
+      "departure_observed": "2026-10-27T02:48:47+00:00",
+      "observed_duration_seconds": 600.0,
+      "kind": "parking",
+      "end_reason": "movement_observed",
+      "arrival_observed": false,
+      "classification_is_estimate": true,
+      "parking_sequence": {
+        "power_off_at": "2026-10-27T02:38:47+00:00",
+        "driver_open_at": "2026-10-27T02:39:47+00:00",
+        "driver_closed_at": "2026-10-27T02:41:47+00:00"
+      },
+      "parking_sequence_current": false,
+      "vehicle_power_off": true,
+      "battery_arrival": 65.0,
+      "battery_latest": 64.0,
+      "battery_latest_at": "2026-10-27T02:47:47+00:00",
+      "battery_departure": 64.0
+    },
+    {
+      "id": "2026-10-27T02:50:47+00:00",
+      "position": {
+        "latitude": 13.744,
+        "longitude": 100.506
+      },
+      "start": "2026-10-27T02:50:47+00:00",
+      "last_observed": "2026-10-27T02:57:47+00:00",
+      "departure_observed": "2026-10-27T02:58:47+00:00",
+      "observed_duration_seconds": 420.0,
+      "kind": "parking",
+      "end_reason": "movement_observed",
+      "arrival_observed": true,
+      "classification_is_estimate": true,
+      "parking_sequence": {
+        "power_off_at": "2026-10-27T02:51:47+00:00",
+        "driver_open_at": "2026-10-27T02:52:47+00:00",
+        "driver_closed_at": "2026-10-27T02:53:47+00:00"
+      },
+      "parking_sequence_current": false,
+      "vehicle_power_off": true,
+      "battery_arrival": 63.7,
+      "battery_latest": 63.0,
+      "battery_latest_at": "2026-10-27T02:57:47+00:00",
+      "battery_departure": 63.0
+    },
+    {
+      "id": "2026-10-27T03:00:47+00:00",
+      "position": {
+        "latitude": 13.748,
+        "longitude": 100.512
+      },
+      "start": "2026-10-27T03:00:47+00:00",
+      "last_observed": "2026-10-27T03:02:47+00:00",
+      "departure_observed": null,
+      "observed_duration_seconds": 120.0,
+      "kind": "temporary_stop",
+      "end_reason": "current",
+      "arrival_observed": true,
+      "classification_is_estimate": true,
+      "parking_sequence": null,
+      "parking_sequence_current": false,
+      "vehicle_power_off": false,
+      "battery_arrival": 62.7,
+      "battery_latest": 62.5,
+      "battery_latest_at": "2026-10-27T03:02:47+00:00",
+      "battery_departure": null
+    }
+  ],
+  "doors": [
+    {
+      "door": "door_front_driver_open",
+      "start": "2026-10-27T02:39:47+00:00",
+      "end": "2026-10-27T02:41:47+00:00",
+      "last_open_observed": "2026-10-27T02:40:47+00:00",
+      "status": "closed_observed",
+      "start_uncertain": false,
+      "position": {
+        "latitude": 13.74,
+        "longitude": 100.5
+      },
+      "battery": 64.8,
+      "observed_open_span_seconds": 60.0,
+      "estimated_duration_seconds": 120.0,
+      "stop_id": "2026-10-27T02:37:47+00:00"
+    },
+    {
+      "door": "door_front_driver_open",
+      "start": "2026-10-27T02:52:47+00:00",
+      "end": "2026-10-27T02:53:47+00:00",
+      "last_open_observed": "2026-10-27T02:52:47+00:00",
+      "status": "closed_observed",
+      "start_uncertain": false,
+      "position": {
+        "latitude": 13.744,
+        "longitude": 100.506
+      },
+      "battery": 63.5,
+      "observed_open_span_seconds": 0.0,
+      "estimated_duration_seconds": 60.0,
+      "stop_id": "2026-10-27T02:50:47+00:00"
+    }
+  ],
+  "engine_code_changes": [],
+  "engine_ignition_supported": false,
+  "vehicle_power_signal_available": true,
+  "movement_events": [
+    {
+      "kind": "movement_started",
+      "time": "2026-10-27T02:48:47+00:00",
+      "detected_at": "2026-10-27T02:49:47+00:00",
+      "position": {
+        "latitude": 13.741333333333333,
+        "longitude": 100.502
+      },
+      "battery": 63.9,
+      "timing_is_estimate": true
+    },
+    {
+      "kind": "movement_stopped",
+      "time": "2026-10-27T02:50:47+00:00",
+      "detected_at": "2026-10-27T02:51:47+00:00",
+      "position": {
+        "latitude": 13.744,
+        "longitude": 100.506
+      },
+      "battery": 63.7,
+      "timing_is_estimate": true
+    },
+    {
+      "kind": "movement_started",
+      "time": "2026-10-27T02:58:47+00:00",
+      "detected_at": "2026-10-27T02:59:47+00:00",
+      "position": {
+        "latitude": 13.745333333333333,
+        "longitude": 100.508
+      },
+      "battery": 62.9,
+      "timing_is_estimate": true
+    },
+    {
+      "kind": "movement_stopped",
+      "time": "2026-10-27T03:00:47+00:00",
+      "detected_at": "2026-10-27T03:01:47+00:00",
+      "position": {
+        "latitude": 13.748,
+        "longitude": 100.512
+      },
+      "battery": 62.7,
+      "timing_is_estimate": true
+    }
+  ],
+  "motion": "stopped",
+  "stale": false,
+  "last_sample_at": "2026-10-27T03:02:47+00:00",
+  "sample_count": 26,
+  "gps_outliers": 0,
+  "rules": {
+    "radius_m": 50,
+    "temporary_stop_seconds": 60,
+    "parking_rule": "stopped_then_verified_vehicle_power_off_then_driver_door_open_then_closed",
+    "max_gap_seconds": 300
+  },
+  "status": "recording",
+  "retention_days": 7,
+  "sample_limit": 20161,
+  "current": {
+    "availability": "available",
+    "position": {
+      "latitude": 13.748,
+      "longitude": 100.512
+    },
+    "reported_at": "2026-10-27T03:02:47+00:00",
+    "expires_at": "2026-10-27T03:07:47+00:00",
+    "battery": 62.5,
+    "locked": true,
+    "doors": {
+      "door_front_driver_open": false,
+      "door_front_passenger_open": false,
+      "door_rear_driver_side_open": false,
+      "door_rear_passenger_side_open": false,
+      "trunk_open": false
+    },
+    "ac_active": false,
+    "vehicle_power_off": false
+  }
+}

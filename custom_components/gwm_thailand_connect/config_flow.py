@@ -290,4 +290,5 @@ class GwmThailandOptionsFlow(config_entries.OptionsFlowWithReload):
                 vol.All(vol.Coerce(int), vol.Range(min=MIN_POLL_SECONDS, max=MAX_POLL_SECONDS)),
             vol.Required("enable_remote_commands", default=current.get("enable_remote_commands", False)): bool,
             vol.Optional("security_pin"): password_selector(),
+            vol.Required("record_journeys", default=current.get("record_journeys", False)): bool,
         }), errors=errors)

@@ -19,10 +19,10 @@ IMAGE_FILES = {
     "custom_components/gwm_thailand_connect/brand/icon.png",
     *(f"docs/images/{name}.png" for name in (
         "material", "method", "code", "password", "consent", "verification",
-        "options", "dashboard", "confirmation",
+        "options", "dashboard", "confirmation", "journeys",
     )),
 }
-TEXT_SUFFIXES = {".py", ".js", ".mjs", ".html", ".json", ".yaml", ".yml", ".md", ".toml", ".txt"}
+TEXT_SUFFIXES = {".py", ".js", ".mjs", ".css", ".html", ".json", ".yaml", ".yml", ".md", ".toml", ".txt"}
 RULES = {
     "private-key-block": re.compile(
         rb"-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----\s+[A-Za-z0-9+/]{24}",

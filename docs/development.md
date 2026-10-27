@@ -29,7 +29,7 @@ custom_components/gwm_thailand_connect/
   coordinator.py          update/error classification and bounded result polling
   sensor.py               measurements and command state
   binary_sensor.py        strict reported door/lock/A/C states
-  frontend/               dependency-free dashboard module
+  frontend/               dashboard and locally bundled Leaflet/vector-map modules
   gwm_client/             Thai-only protocol/identity/client primitives
   brand/                  original neutral icon, no manufacturer logo
 dashboards/               optional HA dashboard definition
@@ -79,21 +79,71 @@ The setup illustrations explain the flow; they are not proof of actual native HA
 `python scripts/build_release.py` runs the publication scanner and creates:
 
 ```text
-dist/gwm-thailand-connect-VERSION.zip
-dist/SHA256SUMS
+dist/VERSION/gwm-thailand-connect-VERSION.zip
+dist/VERSION/SHA256SUMS
 ```
 
 The ZIP contains only the installable component, root MIT license/notice, HACS metadata and dashboard example. It deliberately excludes tests, dependency directories, APKs, generated material, captures, caches, private storage and old Git history. ZIP member timestamps/order are deterministic, and existing release files are not overwritten.
 
 The source scanner rejects unexpected binaries/material files, full private-key blocks, common token formats, symlinks and accidental local/private payloads. It is an additional guard, **not a guarantee that any arbitrary string is safe**. Review every new file, and never rely only on `.gitignore`.
 
+## Rebuild the offline regional map
+
+```text
+python scripts/generate_basemap.py --cache "<local-cache-directory>"
+```
+
+Shapely is declared in the development requirements only. The builder downloads
+generic public-domain world datasets, clips the same fixed Thailand-region
+extent for every installation and writes the bundled JSON. It never signs in,
+reads a vehicle location or requests a tile for a car. The source URLs and
+fingerprints are recorded in the asset. No map data is downloaded from an
+external provider while the dashboard displays a vehicle.
+
 ## CI
 
 - **Checks:** pytest, Ruff, strict mypy, Node frontend tests, public-tree scan and release packaging.
 - **Hassfest:** official Home Assistant integration metadata validation.
 - **HACS validation:** official `hacs/action`, with no ignored validation categories.
+- **Copilot setup steps:** prepares Python 3.14, Node 24, the declared dependencies
+  and the local map-runtime build for GitHub's cloud coding agent.
 
 Do not mark a release usable merely because one job passed. All three workflows must be green.
+
+## Continue in the cloud coding agent
+
+The `cloud/compact-osm` handoff branch contains the in-progress compact
+OpenStreetMap work. Keep it separate from the released `main` branch until review.
+Use GitHub Copilot's cloud coding agent with that feature branch as the task base;
+the setup workflow above prepares its isolated development environment.
+
+The current map contract is:
+
+- Locally served Leaflet/Protomaps runtime and a same-host generic OSM archive.
+- No invented default location. Current GPS must have a valid manufacturer source
+  timestamp within five minutes; old HTTP poll time does not make it current.
+- Compact battery/lock/door/A/C status chips and marker popup; stop details are
+  collapsed by default.
+- Private history is opt-in and expires after seven rolling days.
+- Parking requires observed stop, verified whole-vehicle shutdown, driver-door
+  open and driver-door close in order. The Thai decoder still has no verified
+  shutdown producer, so that input remains unknown.
+
+Cloud development must use synthetic observations only. Do not copy a live HA
+backup, browser profile, private app artifact, provisioning JSON or owner's
+coordinates into the agent environment. The generic country map is provisioned
+separately, not committed to this source repository.
+
+The prepared custom-component update passed local unit/type/lint and isolated
+browser checks. A private installation was updated and its configuration check
+passed, but the latest compact-map restart/resource/UI verification was interrupted
+when the owner paused work. That is an operator follow-up through an authorized
+HA session, not a task the cloud agent can prove without access. Do not claim it
+complete, connect to a real home endpoint, or send physical vehicle commands.
+
+The agent should open a draft PR for review, report the exact checks it ran and
+leave publication/merge/live deployment to the owner. Never claim that a cloud
+task launch is a successful live installation.
 
 ## Maintainer release procedure
 

@@ -26,7 +26,7 @@ A community **Home Assistant custom integration for Thailand-market GWM vehicles
 | Remote commands | Off by default; owner PIN, current capabilities, permissions and confirmation required |
 | Engine start/stop | Not implemented; never substitute A/C activation for engine start |
 | Charging start/stop and schedules | Not implemented |
-| Journey map / parking history | Not in this release |
+| Journey map / parking history | Compact local OpenStreetMap, recent car status and seven-day history in 0.3.0 development builds; not in released 0.1.0 |
 | Distribution | HACS custom repository or manual installation; default-store review is separate |
 
 The protocol foundation has been exercised against the manufacturer's service during private development, including normal owner verification and cached reads. **This separate public adapter is validated using synthetic tests, not a claim of a currently connected owner vehicle or verified physical command execution.** No physical vehicle command was executed by the project assistant. See [testing boundaries](docs/development.md#validation-boundaries).
@@ -60,6 +60,7 @@ The release was published after the repository's Checks, HACS validation (withou
 - [User guide](docs/user-guide.md): readings, unknown states, optional PIN controls and confirmation.
 - [Troubleshooting](docs/troubleshooting.md): delayed codes, certificate continuation, `310022`, `570062`, `607501`.
 - [Architecture and diagrams](docs/architecture.md): trust boundaries, login state machine and command sequence.
+- [Journey map and stop classification](docs/journeys.md): private observed routes, estimated parking, door intervals and per-stop battery.
 - [Development, tech stack and build](docs/development.md): tests, screenshots, source-only ZIP, CI and release.
 - [Contributing](CONTRIBUTING.md), [security and privacy](SECURITY.md), [license/provenance](NOTICE.md).
 
