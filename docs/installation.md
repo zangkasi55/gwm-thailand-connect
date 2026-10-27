@@ -143,7 +143,7 @@ An absent value stays `unknown`; an unavailable account does not become a fake z
 The integration serves its card locally after successful setup; no external JS/CDN is needed.
 
 1. In **Settings > Dashboards > Resources** (advanced mode may be needed), add:
-   - URL: `/gwm_thailand_connect/dashboard/gwm-thailand-card.js?v=0.3.2`
+   - URL: `/gwm_thailand_connect/dashboard/gwm-thailand-card.js?v=0.3.3`
    - Type: **JavaScript module**.
 2. Add a new, empty dashboard.
 3. Set title **Haval** or **GWM Thailand**, URL path **`gwm-thailand`**, and enable **Show in sidebar**.

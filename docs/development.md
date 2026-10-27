@@ -142,8 +142,9 @@ The current map contract is:
   collapsed by default.
 - Private history is opt-in and expires after seven rolling days.
 - Parking requires observed stop, verified whole-vehicle shutdown, driver-door
-  open and driver-door close in order. The Thai decoder still has no verified
-  shutdown producer, so that input remains unknown.
+  open and driver-door close in order. Only explicit canonical `hyEngSts` 0/1
+  values supply hybrid vehicle power. The reference car's sampled HTTP responses
+  have not reported this field; missing power remains unknown, not engine-off.
 
 Cloud development must use synthetic observations only. Do not copy a live HA
 backup, browser profile, private app artifact, provisioning JSON or owner's
