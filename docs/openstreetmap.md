@@ -76,3 +76,6 @@ To exercise the real renderer in isolated browser tests, set
 `GWM_OSM_TEST_ARCHIVE` to a generic local test archive and run
 `npm run docs:journeys`. The test server supports range requests and blocks
 all browser requests except loopback.
+
+For regular regression checks, run `npm run test:browser` instead. It generates
+its own tiny fictional vector archive in memory and needs no external map data.

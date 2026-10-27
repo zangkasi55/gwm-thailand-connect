@@ -21,6 +21,9 @@ def test_version_and_dashboard_resource_are_consistent():
     version = json.loads((component / "manifest.json").read_text())["version"]
     assert f'VERSION = "{version}"' in (component / "const.py").read_text()
     assert f"gwm-thailand-card.js?v={version}" in (ROOT / "docs" / "installation.md").read_text()
+    assert f"gwm-journey-card.js?v={version}" in (
+        component / "frontend" / "gwm-thailand-card.js"
+    ).read_text()
 
 
 def test_all_local_markdown_links_and_screens_exist():

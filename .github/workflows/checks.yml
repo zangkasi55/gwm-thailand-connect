@@ -29,3 +29,16 @@ jobs:
           name: installable-package
           path: dist/
           if-no-files-found: error
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build:map
+      - run: npm run test:browser
