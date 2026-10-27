@@ -78,6 +78,25 @@ test("a late response for vehicle A cannot overwrite vehicle B history",async()=
   await new Promise(resolve=>setImmediate(resolve));assert.equal(card._history.owner,"b");
 });
 
+test("manual Refresh requests one cached cloud read while automatic loads remain local-only",async()=>{
+  const Card=registered.get("gwm-journey-card"),card=new Card(),calls=[];
+  card.setConfig({type:"custom:gwm-journey-card"});
+  card.hass={connected:true,callWS:async request=>{
+    calls.push(request);
+    return request.type==="config/entity_registry/list"
+      ? [{platform:"gwm_thailand_connect",device_id:"synthetic-device"}]
+      : {status:"disabled",segments:[],stops:[],doors:[]};
+  }};
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(calls.find(call=>call.type.endsWith("/journeys")).refresh_cloud,undefined);
+  const target={disabled:false,dataset:{},hasAttribute:name=>name==="data-refresh"};
+  card._click({target:{closest:()=>target}});
+  await new Promise(resolve=>setImmediate(resolve));
+  const reads=calls.filter(call=>call.type.endsWith("/journeys"));
+  assert.equal(reads.length,2);
+  assert.equal(reads[1].refresh_cloud,true);
+});
+
 test("compact status escapes messages and never contains fabricated defaults or CDN requests",async()=>{
   const Card=registered.get("gwm-journey-card"),card=new Card();
   card.setConfig({type:"custom:gwm-journey-card"});

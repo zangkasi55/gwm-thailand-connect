@@ -2,7 +2,7 @@
 
 DOMAIN = "gwm_thailand_connect"
 NAME = "GWM Thailand Connect"
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 APP_STORAGE = DOMAIN + ".app"
 DEFAULT_POLL_SECONDS = 60
 MIN_POLL_SECONDS = 30

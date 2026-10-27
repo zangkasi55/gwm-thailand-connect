@@ -1,5 +1,5 @@
 import { escapeHtml } from "./shared.js";
-import "./gwm-journey-card.js?v=0.3.1";
+import "./gwm-journey-card.js?v=0.3.2";
 export { escapeHtml } from "./shared.js";
 
 const UNKNOWN = new Set(["unknown", "unavailable", "none", "None", ""]);

@@ -86,7 +86,7 @@ class GwmJourneyCard extends HTMLElement {
     super();this.attachShadow({mode:"open"});this._domain="gwm_thailand_connect";this._hours=24;
     this._requestId=0;this._drawId=0;this._mapGeneration=0;this._devices=[];this._registry=null;this._history=null;this._error="";this._fitNext=true;
     this.shadowRoot.innerHTML=`<link rel="stylesheet" href="${CSS_URL.href}"><style>${CSS}</style><section class="shell">
-      <header><h1>Haval journeys</h1><span class="tools"><select data-device aria-label="Vehicle" hidden></select><select data-hours aria-label="History period"><option value="12">12 h</option><option value="24" selected>24 h</option><option value="72">3 days</option><option value="168">7 days</option></select><button data-refresh title="Refresh cloud observations">Refresh</button></span></header>
+      <header><h1>Haval journeys</h1><span class="tools"><select data-device aria-label="Vehicle" hidden></select><select data-hours aria-label="History period"><option value="12">12 h</option><option value="24" selected>24 h</option><option value="72">3 days</option><option value="168">7 days</option></select><button data-refresh title="Read cached cloud status; does not wake the car">Refresh</button></span></header>
       <div class="viewport"><div class="map" aria-label="OpenStreetMap vehicle journey map"></div><div class="blank"><strong>No recent GPS</strong><small>Waiting for a valid vehicle location</small></div>
       <div class="map-actions"><button data-locate title="Show recent car location" disabled>Car</button><button data-fit title="Fit recorded journey" disabled>Journey</button></div><div class="status"></div><div class="credit">${ATTRIBUTION}</div></div>
       <details class="history"><summary>Stops · last 7 days</summary><div class="stop-list"></div><div class="history-options"><label><input type="checkbox" data-clear-check>Clear this car’s history</label><button data-clear disabled>Delete</button></div></details></section>`;
@@ -124,7 +124,7 @@ class GwmJourneyCard extends HTMLElement {
     this._layers=null;this._baseLayer=null;this._car=null;this._displayedCurrent=false;this._fitNext=true;
   }
   getCardSize(){return 12;}
-  async _load(){
+  async _load(refreshCloud=false){
     if(!this._hass?.connected){this._renderStatus();return;}
     const request=++this._requestId;this._loading=true;this._error="";this._renderStatus();
     try{
@@ -135,7 +135,10 @@ class GwmJourneyCard extends HTMLElement {
       const device=this._config?.device_id || this._device || this._devices[0];
       if(!device){this._history=null;this._error="Connect GWM in integration settings";return;}
       this._device=device;
-      const data=await this._hass.callWS({type:this._domain+"/journeys",device_id:device,hours:this._hours});
+      const data=await this._hass.callWS({
+        type:this._domain+"/journeys",device_id:device,hours:this._hours,
+        ...(refreshCloud===true?{refresh_cloud:true}:{}),
+      });
       if(request!==this._requestId)return;
       this._history=data;
     }catch(error){if(request===this._requestId){this._error=error?.message || "History unavailable";}}
@@ -278,7 +281,7 @@ class GwmJourneyCard extends HTMLElement {
   }
   _click(event){
     const target=event.target.closest("button");if(!target || target.disabled)return;
-    if(target.hasAttribute("data-refresh")){this._registry=null;this._load();}
+    if(target.hasAttribute("data-refresh")){this._registry=null;this._load(true);}
     if(target.hasAttribute("data-fit")){this._fitNext=true;this._updateMap();}
     if(target.hasAttribute("data-locate")){
       const current=this._current();

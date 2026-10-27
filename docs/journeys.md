@@ -1,6 +1,6 @@
 # Haval journeys, temporary stops and parking
 
-This is a **0.3.0 development feature**, not part of the published 0.1.0 release.
+This is a **0.3.x development feature**, not part of the published 0.1.0 release.
 It records observations on your own HA host after explicit opt-in. It is not
 continuous GPS tracking, a security device or a manufacturer trip log.
 
@@ -97,6 +97,14 @@ stateDiagram-v2
 ```
 
 ## Stops, battery and doors
+
+The **Refresh** button requests the integration's normal cached cloud read before
+loading current status and history. It does not wake the vehicle, call
+`vehicle/findStatus`, or publish a command. An old manufacturer timestamp remains
+old; clicking Refresh never makes a stale fix current. Automatic card reloads
+continue to read the local observations without requesting an additional cloud
+read. Unloaded accounts, permission failures and unsuccessful cloud reads are
+reported explicitly.
 
 The page is map-first, with compact battery/lock/door/A/C chips and a car marker.
 Select the car for its status popup. Open **Stops** or select a numbered marker to see:

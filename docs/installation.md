@@ -143,7 +143,7 @@ An absent value stays `unknown`; an unavailable account does not become a fake z
 The integration serves its card locally after successful setup; no external JS/CDN is needed.
 
 1. In **Settings > Dashboards > Resources** (advanced mode may be needed), add:
-   - URL: `/gwm_thailand_connect/dashboard/gwm-thailand-card.js?v=0.3.1`
+   - URL: `/gwm_thailand_connect/dashboard/gwm-thailand-card.js?v=0.3.2`
    - Type: **JavaScript module**.
 2. Add a new, empty dashboard.
 3. Set title **Haval** or **GWM Thailand**, URL path **`gwm-thailand`**, and enable **Show in sidebar**.
@@ -161,7 +161,7 @@ type: custom:gwm-thailand-card
 
 The same module also registers `custom:gwm-journey-card`. The supplied dashboard adds
 a **Journeys & parking** sub-tab at `/gwm-thailand/journeys`. Recording is opt-in;
-see [journey history](journeys.md) and [local OpenStreetMap setup](openstreetmap.md). This feature is for 0.3.0 development builds,
+see [journey history](journeys.md) and [local OpenStreetMap setup](openstreetmap.md). This feature is for 0.3.x development builds,
 not the published 0.1.0 release.
 
 If several vehicles exist, the card provides a selector. To pin one card to a vehicle, use its **Home Assistant device registry ID**, not its VIN:

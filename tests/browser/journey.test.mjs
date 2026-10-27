@@ -171,6 +171,16 @@ test("manual pan and zoom survive a cloud status refresh",async()=>{
   });
 });
 
+test("Refresh explicitly asks for cached cloud data without changing automatic read behavior",async()=>{
+  await withPage(async page=>{
+    await ready(page);await marker(page);
+    assert.equal(await page.evaluate(()=>window.__calls.find(call=>call.type.endsWith("/journeys")).refresh_cloud),undefined);
+    await page.getByRole("button",{name:"Refresh",exact:true}).click();
+    await page.waitForFunction(()=>window.__calls.some(call=>call.refresh_cloud===true));
+    assert.equal(await page.evaluate(()=>window.__calls.filter(call=>call.refresh_cloud===true).length),1);
+    await marker(page);
+  });
+});
 test("disconnect immediately removes a current car marker instead of leaving a false live location",async()=>{
   await withPage(async page=>{
     await ready(page);await marker(page);
