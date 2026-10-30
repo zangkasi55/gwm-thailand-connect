@@ -179,6 +179,83 @@ async def test_exact_seven_day_expiry_runs_without_a_cloud_poll_or_dashboard_rea
     assert store.next_expiry is None
 
 
+async def test_manual_refresh_reads_cloud_once_before_current_position_and_history(hass, monkeypatch):
+    configured, connection = permission_context(hass, monkeypatch)
+    handlers = []
+    monkeypatch.setattr(journey_ws.websocket_api, "async_register_command", lambda hass, handler: handlers.append(handler))
+    journey_ws.register_journey_api(hass)
+    order = []
+
+    async def refresh():
+        order.append("cloud")
+
+    async def history(*args):
+        order.append("history")
+        return {"sample_count": 0}
+
+    def vehicle(identifier):
+        order.append("current")
+        return None
+
+    coordinator = SimpleNamespace(
+        async_request_refresh=AsyncMock(side_effect=refresh),
+        last_update_success=True, vehicle=vehicle, history_error=None,
+    )
+    store = SimpleNamespace(history=AsyncMock(side_effect=history), retention_error=False)
+    access = journey_ws.JourneyAccess(configured, store, "SYNTHETICVIN", coordinator)
+    monkeypatch.setattr(journey_ws, "resolve_coordinator", lambda *args, **kwargs: access)
+    await inspect.unwrap(handlers[0])(hass, connection, {
+        "id": 4, "device_id": "synthetic-device", "hours": 24, "refresh_cloud": True,
+    })
+    coordinator.async_request_refresh.assert_awaited_once()
+    assert order == ["cloud", "current", "history"]
+    connection.send_error.assert_not_called()
+
+
+@pytest.mark.parametrize("loaded", [True, False])
+async def test_manual_refresh_failure_is_an_error_not_success_shaped_cached_data(hass, monkeypatch, loaded):
+    configured, connection = permission_context(hass, monkeypatch)
+    handlers = []
+    monkeypatch.setattr(journey_ws.websocket_api, "async_register_command", lambda hass, handler: handlers.append(handler))
+    journey_ws.register_journey_api(hass)
+    coordinator = SimpleNamespace(async_request_refresh=AsyncMock(), last_update_success=False)
+    store = SimpleNamespace(history=AsyncMock(), retention_error=False)
+    access = journey_ws.JourneyAccess(configured, store, "SYNTHETICVIN", coordinator if loaded else None)
+    monkeypatch.setattr(journey_ws, "resolve_coordinator", lambda *args, **kwargs: access)
+    await inspect.unwrap(handlers[0])(hass, connection, {
+        "id": 5, "device_id": "synthetic-device", "hours": 24, "refresh_cloud": True,
+    })
+    store.history.assert_not_awaited()
+    connection.send_result.assert_not_called()
+    assert connection.send_error.call_args.args[1] == ("cloud_refresh_failed" if loaded else "cloud_unavailable")
+
+
+async def test_manual_refresh_rejects_non_boolean_and_preserves_device_permissions(hass, monkeypatch):
+    configured, connection = permission_context(hass, monkeypatch)
+    handlers = []
+    monkeypatch.setattr(journey_ws.websocket_api, "async_register_command", lambda hass, handler: handlers.append(handler))
+    journey_ws.register_journey_api(hass)
+    coordinator = SimpleNamespace(async_request_refresh=AsyncMock())
+    access = journey_ws.JourneyAccess(configured, SimpleNamespace(), "SYNTHETICVIN", coordinator)
+    monkeypatch.setattr(journey_ws, "resolve_coordinator", lambda *args, **kwargs: access)
+    for value in (1, "true", None):
+        await inspect.unwrap(handlers[0])(hass, connection, {
+            "id": 6, "device_id": "synthetic-device", "refresh_cloud": value,
+        })
+    coordinator.async_request_refresh.assert_not_awaited()
+    assert connection.send_error.call_args.args[1] == "invalid_refresh_option"
+
+    def denied(*args, **kwargs):
+        raise ValueError("not_authorized")
+
+    monkeypatch.setattr(journey_ws, "resolve_coordinator", denied)
+    await inspect.unwrap(handlers[0])(hass, connection, {
+        "id": 7, "device_id": "synthetic-device", "refresh_cloud": True,
+    })
+    coordinator.async_request_refresh.assert_not_awaited()
+    assert connection.send_error.call_args.args[1] == "not_authorized"
+
+
 async def test_expiry_failure_is_visible_and_retries_only_local_pruning(hass, monkeypatch):
     store = JourneyStore(hass, "synthetic-binding")
     await store.record([snapshot(0)], now=NOW)

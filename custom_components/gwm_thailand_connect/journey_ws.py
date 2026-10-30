@@ -69,6 +69,7 @@ def register_journey_api(hass: HomeAssistant) -> None:
         vol.Required("type"): DOMAIN + "/journeys",
         vol.Required("device_id"): str,
         vol.Optional("hours", default=24): vol.All(int, vol.Range(min=1, max=168)),
+        vol.Optional("refresh_cloud", default=False): bool,
     })
     @async_response
     async def history(
@@ -79,6 +80,18 @@ def register_journey_api(hass: HomeAssistant) -> None:
         except ValueError as error:
             connection.send_error(message["id"], str(error), "Vehicle history is not accessible")
             return
+        refresh = message.get("refresh_cloud", False)
+        if type(refresh) is not bool:
+            connection.send_error(message["id"], "invalid_refresh_option", "Cloud refresh must be a boolean")
+            return
+        if refresh:
+            if access.coordinator is None:
+                connection.send_error(message["id"], "cloud_unavailable", "The GWM account is not loaded")
+                return
+            await access.coordinator.async_request_refresh()
+            if not access.coordinator.last_update_success:
+                connection.send_error(message["id"], "cloud_refresh_failed", "Cached vehicle status could not be refreshed")
+                return
         current = recent_vehicle(
             access.coordinator.vehicle(access.identifier) if access.coordinator is not None else None,
         )

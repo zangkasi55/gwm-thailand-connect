@@ -13,7 +13,7 @@ globalThis.HTMLElement=class {
   }
 };
 globalThis.customElements={get:key=>registered.get(key),define:(key,value)=>registered.set(key,value)};
-const {validPosition,freshCurrent,localTileTemplate,localMapArchive,elapsed}=
+const {validPosition,freshCurrent,localTileTemplate,localMapArchive,mapLanguage,elapsed}=
   await import("../../custom_components/gwm_thailand_connect/frontend/gwm-journey-card.js");
 const now=Date.now();
 const current=()=>({
@@ -45,6 +45,17 @@ test("only a recent valid manufacturer fix becomes a car marker",()=>{
   assert.equal(freshCurrent(undefined),null);
 });
 
+test("map labels use Thai by default and accept an explicit English preference",()=>{
+  assert.equal(mapLanguage(),"th");
+  assert.equal(mapLanguage("th"),"th");
+  assert.equal(mapLanguage("en"),"en");
+  for(const value of ["",null,1,"th-TH"])assert.throws(()=>mapLanguage(value));
+  const Card=registered.get("gwm-journey-card"),card=new Card();
+  card.setConfig({type:"custom:gwm-journey-card",map_language:"en"});
+  assert.equal(card._mapLanguage,"en");
+  card.setConfig({type:"custom:gwm-journey-card"});
+  assert.equal(card._mapLanguage,"th");
+});
 test("missing and zero durations are distinct",()=>{
   assert.equal(elapsed(null),"Not reported");assert.equal(elapsed(0),"0s");assert.equal(elapsed(300),"5m 0s");
 });
@@ -76,6 +87,25 @@ test("a late response for vehicle A cannot overwrite vehicle B history",async()=
   responses.get("b")({status:"disabled",owner:"b"});await second;
   responses.get("a")({status:"disabled",owner:"a"});
   await new Promise(resolve=>setImmediate(resolve));assert.equal(card._history.owner,"b");
+});
+
+test("manual Refresh requests one cached cloud read while automatic loads remain local-only",async()=>{
+  const Card=registered.get("gwm-journey-card"),card=new Card(),calls=[];
+  card.setConfig({type:"custom:gwm-journey-card"});
+  card.hass={connected:true,callWS:async request=>{
+    calls.push(request);
+    return request.type==="config/entity_registry/list"
+      ? [{platform:"gwm_thailand_connect",device_id:"synthetic-device"}]
+      : {status:"disabled",segments:[],stops:[],doors:[]};
+  }};
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(calls.find(call=>call.type.endsWith("/journeys")).refresh_cloud,undefined);
+  const target={disabled:false,dataset:{},hasAttribute:name=>name==="data-refresh"};
+  card._click({target:{closest:()=>target}});
+  await new Promise(resolve=>setImmediate(resolve));
+  const reads=calls.filter(call=>call.type.endsWith("/journeys"));
+  assert.equal(reads.length,2);
+  assert.equal(reads[1].refresh_cloud,true);
 });
 
 test("compact status escapes messages and never contains fabricated defaults or CDN requests",async()=>{
