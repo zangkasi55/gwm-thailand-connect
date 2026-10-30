@@ -26,6 +26,11 @@ export function localMapArchive(value="/local/gwm-maps/thailand.pmtiles"){
   return value;
 }
 
+export function mapLanguage(value="th"){
+  if(!["th","en"].includes(value))throw new Error("Map language must be th or en");
+  return value;
+}
+
 export function validPosition(value){
   return !!value && typeof value.latitude==="number" && typeof value.longitude==="number"
     && Number.isFinite(value.latitude) && Number.isFinite(value.longitude)
@@ -100,7 +105,11 @@ class GwmJourneyCard extends HTMLElement {
     if(config.device_id!==undefined && typeof config.device_id!=="string")throw new Error("device_id must be a HA registry ID");
     this._tiles=localTileTemplate(config.local_tile_url);
     this._archive=localMapArchive(config.map_archive);
+    const language=mapLanguage(config.map_language);
+    if(this._mapLanguage!==undefined && this._mapLanguage!==language)this._resetMap();
+    this._mapLanguage=language;
     this._domain=domain;this._config=config;
+    if(this.isConnected && this._history)this._updateMap();
   }
   set hass(value){
     const first=!this._hass,reconnected=this._hass?.connected===false && value?.connected;
@@ -118,7 +127,11 @@ class GwmJourneyCard extends HTMLElement {
     if(this._hass?.connected)this._load();
   }
   disconnectedCallback(){
-    clearInterval(this._poll);clearInterval(this._freshness);this._requestId++;this._drawId++;this._mapGeneration++;
+    clearInterval(this._poll);clearInterval(this._freshness);this._requestId++;
+    this._resetMap();
+  }
+  _resetMap(){
+    this._drawId++;this._mapGeneration++;
     this._mapAbort?.abort();this._mapAbort=null;this._mapCreating=null;this._loading=false;
     this._resize?.disconnect();this._map?.remove();this._map=null;this._runtime=null;
     this._layers=null;this._baseLayer=null;this._car=null;this._displayedCurrent=false;this._fitNext=true;
@@ -190,7 +203,7 @@ class GwmJourneyCard extends HTMLElement {
     this._mapAbort=abort;
     const creating=(async()=>{
       try{
-        const runtime=await import("./vendor/map-runtime.js");
+        const runtime=await import("./vendor/map-runtime.js?v=0.3.4");
         if(!active())return false;
         if(!this._tiles){
           const probe=await fetch(new URL(this._archive,location.origin),{
@@ -209,7 +222,7 @@ class GwmJourneyCard extends HTMLElement {
           }
         }
         if(!active())return false;
-        const {L,leafletLayer}=runtime;
+        const {L,placeMapLayer}=runtime;
         this._runtime=runtime;this._mapError=false;
         this._map=L.map(this.shadowRoot.querySelector(".map"),{
           attributionControl:false,zoomControl:true,preferCanvas:false,maxZoom:19,minZoom:3,
@@ -217,7 +230,7 @@ class GwmJourneyCard extends HTMLElement {
         });
         this._layers=L.layerGroup().addTo(this._map);
         const layer=this._tiles ? L.tileLayer(this._tiles,{maxZoom:19,keepBuffer:1})
-          : leafletLayer({url:new URL(this._archive,location.origin).href,flavor:"light",lang:"en",maxDataZoom:13,maxZoom:19});
+          : placeMapLayer({url:new URL(this._archive,location.origin).href,flavor:"light",lang:this._mapLanguage,maxDataZoom:13,maxZoom:19});
         this._baseLayer=layer;
         layer.on("tileerror",()=>{
           if(active() && this._baseLayer===layer){this._mapError=true;this._renderStatus();}
