@@ -98,7 +98,16 @@ If validation fails, check the APK version/hash and regenerate locally. Do not d
 
 ![Illustrative native-method menu](images/method.png)
 
-**Verification code** is appropriate when your account supports SMS/email sign-in:
+**Mobile number (SMS OTP; no password)** is the phone-number sign-in path:
+
+- Enter only the registered mobile number linked to the official Thai app.
+- No account password or vehicle PIN is requested.
+- After the explicit session warning, GWM sends an OTP; enter it only in HA.
+- A mobile number submitted through the older password step is routed to OTP
+  without sending its supplied password. An existing mobile account also opens
+  the password-free OTP form when reconnecting.
+
+**Verification code** remains available for linked email or mobile contacts:
 
 ![Code login: contact only, no password field](images/code.png)
 
@@ -106,7 +115,7 @@ If validation fails, check the APK version/hash and regenerate locally. Do not d
 - There is **no account-password field** in this method.
 - Do not enter your vehicle security PIN as an account credential.
 
-**Official-app password** displays and requires the account-password field:
+**Email with official-app account password** displays and requires the account-password field:
 
 ![Password login: account password required](images/password.png)
 
@@ -143,7 +152,7 @@ An absent value stays `unknown`; an unavailable account does not become a fake z
 The integration serves its card locally after successful setup; no external JS/CDN is needed.
 
 1. In **Settings > Dashboards > Resources** (advanced mode may be needed), add:
-   - URL: `/gwm_thailand_connect/dashboard/gwm-thailand-card.js?v=0.3.4`
+   - URL: `/gwm_thailand_connect/dashboard/gwm-thailand-card.js?v=0.3.5`
    - Type: **JavaScript module**.
 2. Add a new, empty dashboard.
 3. Set title **Haval** or **GWM Thailand**, URL path **`gwm-thailand`**, and enable **Show in sidebar**.

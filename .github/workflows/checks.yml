@@ -43,3 +43,12 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build:map
       - run: npm run test:browser
+      - run: node scripts/screenshots.mjs --signin-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-sign-in-manual
+          path: |
+            docs/images/method.png
+            docs/images/code.png
+            docs/images/password.png
+          if-no-files-found: error

@@ -53,21 +53,29 @@ try {
   const output=resolve(root,"docs","images");
   await mkdir(output,{recursive:true});
   const journeysOnly=process.argv.includes("--journeys-only");
-  for(const screen of journeysOnly ? [] : ["material","method","code","password","consent","verification","options","dashboard","confirmation"]){
+  const signInOnly=process.argv.includes("--signin-only");
+  for(const screen of journeysOnly ? [] : signInOnly ? ["method","code","password"]
+    : ["material","method","code","password","consent","verification","options","dashboard","confirmation"]){
     await page.goto(`http://127.0.0.1:${port}/docs/demo/index.html?screen=${screen}`);
     await page.waitForSelector('body[data-ready="true"]');
+    if(screen==="method")assert.match(await page.locator(".body").innerText(),/Mobile number \(SMS OTP; no password\)/);
+    if(screen==="code"){
+      assert.equal(await page.locator("input[type=password]").count(),0);
+      assert.match(await page.locator(".body").innerText(),/SMS OTP/);
+    }
+    if(screen==="password")assert.equal(await page.locator("input[type=password]").count(),1);
     if(["dashboard","confirmation"].includes(screen)) await page.locator("gwm-thailand-card .gauge").waitFor({state:"attached"});
     if(screen==="confirmation") await page.locator("gwm-thailand-card [role=dialog]").waitFor();
     await page.screenshot({path:resolve(output,screen+".png"),fullPage:true});
     console.log("Generated synthetic documentation screen:",screen);
   }
-  if(!journeysOnly){
+  if(!journeysOnly && !signInOnly){
     await page.goto(`http://127.0.0.1:${port}/docs/demo/index.html?screen=icon`);
     await page.waitForSelector('body[data-ready="true"]');
     const brand=resolve(root,"custom_components","gwm_thailand_connect","brand");
     await mkdir(brand,{recursive:true});
     await page.locator("#icon").screenshot({path:resolve(brand,"icon.png")});
-  }else{
+  }else if(journeysOnly){
     if(!process.env.GWM_OSM_TEST_ARCHIVE)throw new Error("Set GWM_OSM_TEST_ARCHIVE to a generic local test archive; no owner data is needed");
     await page.goto(`http://127.0.0.1:${port}/docs/demo/journey.html`);
     await page.waitForSelector('body[data-ready="true"]');
