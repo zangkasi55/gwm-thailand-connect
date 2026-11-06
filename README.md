@@ -20,13 +20,13 @@ A community **Home Assistant custom integration for Thailand-market GWM vehicles
 | --- | --- |
 | Market | Thailand only; protocol reviewed against My GWM Thailand `com.gwm.tha` 3.0.8 |
 | Reference vehicle | Thailand Haval H6 PHEV; other models need independent compatibility testing |
-| Account sign-in | Linked contact + verification code, or official account password |
+| Account sign-in | Mobile number -> SMS OTP (no password); linked email code or official account password |
 | Telemetry | Battery SOC, range, odometer, doors/boot, locks, A/C, charging indicators and tyres when reported |
 | Cabin temperature | Unknown when absent; requested A/C temperature is not a measurement |
 | Remote commands | Off by default; owner PIN, current capabilities, permissions and confirmation required |
 | Engine start/stop | Not implemented; never substitute A/C activation for engine start |
 | Charging start/stop and schedules | Not implemented |
-| Journey map / parking history | Compact local OpenStreetMap, recent car status and seven-day history in 0.3.0 development builds; not in released 0.1.0 |
+| Journey map / parking history | Compact local OpenStreetMap, recent car status and seven-day history in 0.3.x development builds; not in released 0.1.0 |
 | Distribution | HACS custom repository or manual installation; default-store review is separate |
 
 The protocol foundation has been exercised against the manufacturer's service during private development, including normal owner verification and cached reads. **This separate public adapter is validated using synthetic tests, not a claim of a currently connected owner vehicle or verified physical command execution.** No physical vehicle command was executed by the project assistant. See [testing boundaries](docs/development.md#validation-boundaries).

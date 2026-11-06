@@ -99,6 +99,7 @@ class CloudVehicleStatus:
     latitude: float | None = field(default=None, repr=False)
     longitude: float | None = field(default=None, repr=False)
     items: tuple[CloudStatusItem, ...] = field(default=(), repr=False)
+    hybrid_power_state: str | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,6 +210,7 @@ def parse_cloud_vehicle_status(
         latitude=_optional_coordinate(data.get("latitude"), allow_string=allow_stringified_numbers),
         longitude=_optional_coordinate(data.get("longitude"), allow_string=allow_stringified_numbers),
         items=tuple(items),
+        hybrid_power_state=_optional_string(data.get("hyEngSts"), allow_integer=True),
     )
 
 

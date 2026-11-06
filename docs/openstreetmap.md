@@ -63,7 +63,23 @@ the marker and current status are blank. If there are also no historical
 observations, the map remains blank and ready for the first real position.
 No vehicle wake, sign-in retry or physical command is sent by viewing the map.
 
-## Attribution and dependencies
+## Place names and language
+
+The local vector map shows city/road names and named neighbourhoods and places
+included in the archive. Thai names are preferred by default, with local-name
+and English fallback. Set `map_language: en` on the journey card for English-first
+labels, or `map_language: th` for Thai-first labels.
+
+Neighbourhoods appear at zoom 11 and above; named places at zoom 13 and above,
+subject to each feature's own minimum zoom and label-collision avoidance.
+The country extract has data only through zoom 13. Zooming further cannot add
+shops or names absent from that extract. Raster XYZ labels are baked into images
+and cannot be translated by this setting.
+
+Labels are read from the same-host archive, not from online reverse geocoding.
+Current position freshness and blank-map behavior are unchanged.
+
+## Map attribution and dependencies
 
 Visible attribution links to OpenStreetMap contributors/ODbL and identifies
 Protomaps. OSM map content is not licensed under the source-code MIT license.
@@ -76,3 +92,6 @@ To exercise the real renderer in isolated browser tests, set
 `GWM_OSM_TEST_ARCHIVE` to a generic local test archive and run
 `npm run docs:journeys`. The test server supports range requests and blocks
 all browser requests except loopback.
+
+For regular regression checks, run `npm run test:browser` instead. It generates
+its own tiny fictional vector archive in memory and needs no external map data.

@@ -184,6 +184,7 @@ class VehicleValues:
     remaining_usable_charge_percent: float | None = None
     battery_pack_current: float | None = None
     battery_pack_voltage: float | None = None
+    vehicle_power_off: bool | None = None
 
     def as_dict(self) -> SnapshotDictionary:
         """Return every released value key, including unknown values."""
@@ -245,6 +246,7 @@ class VehicleValues:
             "rear_right_seat_heater_level": self.rear_right_seat_heater_level,
             "front_windscreen_heater_active": self.front_windscreen_heater_active,
             "engine_state_code": self.engine_state_code,
+            "vehicle_power_off": self.vehicle_power_off,
             "front_driver_seat_heater_level": self.front_driver_seat_heater_level,
             "front_passenger_seat_heater_level": self.front_passenger_seat_heater_level,
             "front_driver_seat_vent_level": self.front_driver_seat_vent_level,
@@ -450,6 +452,9 @@ def map_vehicle_snapshot(
         rear_right_seat_heater_level=_level(raw_items, "2424002"),
         front_windscreen_heater_active=_bool(raw_items, "2202111"),
         engine_state_code=_integer(raw_items, "2016001"),
+        vehicle_power_off=(
+            status.hybrid_power_state == "0" if status.hybrid_power_state in {"0", "1"} else None
+        ),
         front_driver_seat_heater_level=_level(raw_items, "2220001"),
         front_passenger_seat_heater_level=_level(raw_items, "2220002"),
         front_driver_seat_vent_level=_level(raw_items, "2220003"),

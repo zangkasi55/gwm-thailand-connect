@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/frontend/*.test.mjs",
+    "test:browser": "node --test tests/browser/*.test.mjs",
     "docs:screenshots": "node scripts/screenshots.mjs",
     "docs:journeys": "python scripts/generate_journey_demo.py && node scripts/screenshots.mjs --journeys-only",
     "build:map": "node scripts/build_map_vendor.mjs"
@@ -12,6 +13,7 @@
     "esbuild": "0.28.2",
     "leaflet": "1.9.4",
     "playwright": "1.58.2",
+    "pmtiles": "3.2.1",
     "protomaps-leaflet": "5.1.0"
   }
 }

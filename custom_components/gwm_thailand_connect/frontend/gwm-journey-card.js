@@ -26,6 +26,11 @@ export function localMapArchive(value="/local/gwm-maps/thailand.pmtiles"){
   return value;
 }
 
+export function mapLanguage(value="th"){
+  if(!["th","en"].includes(value))throw new Error("Map language must be th or en");
+  return value;
+}
+
 export function validPosition(value){
   return !!value && typeof value.latitude==="number" && typeof value.longitude==="number"
     && Number.isFinite(value.latitude) && Number.isFinite(value.longitude)
@@ -84,9 +89,9 @@ const CSS=`
 class GwmJourneyCard extends HTMLElement {
   constructor(){
     super();this.attachShadow({mode:"open"});this._domain="gwm_thailand_connect";this._hours=24;
-    this._requestId=0;this._drawId=0;this._devices=[];this._registry=null;this._history=null;this._error="";this._fitNext=true;
+    this._requestId=0;this._drawId=0;this._mapGeneration=0;this._devices=[];this._registry=null;this._history=null;this._error="";this._fitNext=true;
     this.shadowRoot.innerHTML=`<link rel="stylesheet" href="${CSS_URL.href}"><style>${CSS}</style><section class="shell">
-      <header><h1>Haval journeys</h1><span class="tools"><select data-device aria-label="Vehicle" hidden></select><select data-hours aria-label="History period"><option value="12">12 h</option><option value="24" selected>24 h</option><option value="72">3 days</option><option value="168">7 days</option></select><button data-refresh title="Refresh cloud observations">Refresh</button></span></header>
+      <header><h1>Haval journeys</h1><span class="tools"><select data-device aria-label="Vehicle" hidden></select><select data-hours aria-label="History period"><option value="12">12 h</option><option value="24" selected>24 h</option><option value="72">3 days</option><option value="168">7 days</option></select><button data-refresh title="Read cached cloud status; does not wake the car">Refresh</button></span></header>
       <div class="viewport"><div class="map" aria-label="OpenStreetMap vehicle journey map"></div><div class="blank"><strong>No recent GPS</strong><small>Waiting for a valid vehicle location</small></div>
       <div class="map-actions"><button data-locate title="Show recent car location" disabled>Car</button><button data-fit title="Fit recorded journey" disabled>Journey</button></div><div class="status"></div><div class="credit">${ATTRIBUTION}</div></div>
       <details class="history"><summary>Stops · last 7 days</summary><div class="stop-list"></div><div class="history-options"><label><input type="checkbox" data-clear-check>Clear this car’s history</label><button data-clear disabled>Delete</button></div></details></section>`;
@@ -100,24 +105,39 @@ class GwmJourneyCard extends HTMLElement {
     if(config.device_id!==undefined && typeof config.device_id!=="string")throw new Error("device_id must be a HA registry ID");
     this._tiles=localTileTemplate(config.local_tile_url);
     this._archive=localMapArchive(config.map_archive);
+    const language=mapLanguage(config.map_language);
+    if(this._mapLanguage!==undefined && this._mapLanguage!==language)this._resetMap();
+    this._mapLanguage=language;
     this._domain=domain;this._config=config;
+    if(this.isConnected && this._history)this._updateMap();
   }
   set hass(value){
     const first=!this._hass,reconnected=this._hass?.connected===false && value?.connected;
-    this._hass=value;if(first || reconnected)this._load();else this._renderStatus();
+    const disconnected=this._hass?.connected===true && value?.connected!==true;
+    this._hass=value;
+    if(first || reconnected)this._load();
+    else if(disconnected)this._updateMap();
+    else this._renderStatus();
   }
   connectedCallback(){
     this._poll=setInterval(()=>{if(!this._loading && !document.hidden)this._load();},60000);
     this._freshness=setInterval(()=>{
       if(this._displayedCurrent && !this._current())this._updateMap();else this._renderStatus();
     },15000);
+    if(this._hass?.connected)this._load();
   }
   disconnectedCallback(){
-    clearInterval(this._poll);clearInterval(this._freshness);this._requestId++;this._drawId++;
+    clearInterval(this._poll);clearInterval(this._freshness);this._requestId++;
+    this._resetMap();
+  }
+  _resetMap(){
+    this._drawId++;this._mapGeneration++;
+    this._mapAbort?.abort();this._mapAbort=null;this._mapCreating=null;this._loading=false;
     this._resize?.disconnect();this._map?.remove();this._map=null;this._runtime=null;
+    this._layers=null;this._baseLayer=null;this._car=null;this._displayedCurrent=false;this._fitNext=true;
   }
   getCardSize(){return 12;}
-  async _load(){
+  async _load(refreshCloud=false){
     if(!this._hass?.connected){this._renderStatus();return;}
     const request=++this._requestId;this._loading=true;this._error="";this._renderStatus();
     try{
@@ -128,7 +148,10 @@ class GwmJourneyCard extends HTMLElement {
       const device=this._config?.device_id || this._device || this._devices[0];
       if(!device){this._history=null;this._error="Connect GWM in integration settings";return;}
       this._device=device;
-      const data=await this._hass.callWS({type:this._domain+"/journeys",device_id:device,hours:this._hours});
+      const data=await this._hass.callWS({
+        type:this._domain+"/journeys",device_id:device,hours:this._hours,
+        ...(refreshCloud===true?{refresh_cloud:true}:{}),
+      });
       if(request!==this._requestId)return;
       this._history=data;
     }catch(error){if(request===this._requestId){this._error=error?.message || "History unavailable";}}
@@ -172,41 +195,63 @@ class GwmJourneyCard extends HTMLElement {
     this.shadowRoot.querySelector(".history summary").textContent=`Stops (${stops.length}) · rolling 7 days`;
   }
   async _ensureMap(){
+    if(!this.isConnected)return false;
     if(this._map)return true;
-    if(this._mapCreating){await this._mapCreating;return !!this._map;}
-    this._mapCreating=(async()=>{
-      const runtime=await import("./vendor/map-runtime.js");
-      if(!this.isConnected)return;
-      if(!this._tiles){
-        const probe=await fetch(new URL(this._archive,location.origin),{
-          headers:{Range:"bytes=0-7"},credentials:"same-origin",signal:AbortSignal.timeout(15000),
+    if(this._mapCreating)return this._mapCreating;
+    const generation=this._mapGeneration,abort=new AbortController();
+    const active=()=>this.isConnected && this._mapGeneration===generation;
+    this._mapAbort=abort;
+    const creating=(async()=>{
+      try{
+        const runtime=await import("./vendor/map-runtime.js?v=0.3.4");
+        if(!active())return false;
+        if(!this._tiles){
+          const probe=await fetch(new URL(this._archive,location.origin),{
+            headers:{Range:"bytes=0-7"},credentials:"same-origin",
+            signal:AbortSignal.any([abort.signal,AbortSignal.timeout(15000)]),
+          });
+          if(!active()){await probe.body?.cancel();return false;}
+          if(probe.status!==206 || probe.headers.get("content-range")?.startsWith("bytes 0-7/")!==true){
+            await probe.body?.cancel();
+            throw new Error("Local OSM archive unavailable or byte ranges unsupported");
+          }
+          const header=new Uint8Array(await probe.arrayBuffer());
+          if(!active())return false;
+          if(header.length!==8 || new TextDecoder().decode(header.slice(0,7))!=="PMTiles" || header[7]!==3){
+            throw new Error("Local OSM archive is not PMTiles v3");
+          }
+        }
+        if(!active())return false;
+        const {L,placeMapLayer}=runtime;
+        this._runtime=runtime;this._mapError=false;
+        this._map=L.map(this.shadowRoot.querySelector(".map"),{
+          attributionControl:false,zoomControl:true,preferCanvas:false,maxZoom:19,minZoom:3,
+          fadeAnimation:false,zoomAnimation:false,markerZoomAnimation:false,
         });
-        if(probe.status!==206 || probe.headers.get("content-range")?.startsWith("bytes 0-7/")!==true){
-          await probe.body?.cancel();
-          throw new Error("Local OSM archive unavailable or byte ranges unsupported");
-        }
-        const header=new Uint8Array(await probe.arrayBuffer());
-        if(header.length!==8 || new TextDecoder().decode(header.slice(0,7))!=="PMTiles" || header[7]!==3){
-          throw new Error("Local OSM archive is not PMTiles v3");
-        }
+        this._layers=L.layerGroup().addTo(this._map);
+        const layer=this._tiles ? L.tileLayer(this._tiles,{maxZoom:19,keepBuffer:1})
+          : placeMapLayer({url:new URL(this._archive,location.origin).href,flavor:"light",lang:this._mapLanguage,maxDataZoom:13,maxZoom:19});
+        this._baseLayer=layer;
+        layer.on("tileerror",()=>{
+          if(active() && this._baseLayer===layer){this._mapError=true;this._renderStatus();}
+        });
+        layer.addTo(this._map);
+        this._resize=new ResizeObserver(()=>this._map?.invalidateSize({pan:false}));
+        this._resize.observe(this.shadowRoot.querySelector(".viewport"));
+        return true;
+      }catch(error){
+        if(!active() || abort.signal.aborted)return false;
+        this._resize?.disconnect();this._map?.remove();this._map=null;this._runtime=null;
+        this._layers=null;this._baseLayer=null;
+        this._error=error?.message || "Map could not load";this._renderStatus();
+        return false;
+      }finally{
+        if(this._mapCreating===creating)this._mapCreating=null;
+        if(this._mapAbort===abort)this._mapAbort=null;
       }
-      const {L,leafletLayer}=runtime;
-      this._runtime=runtime;
-      this._map=L.map(this.shadowRoot.querySelector(".map"),{
-        attributionControl:false,zoomControl:true,preferCanvas:false,maxZoom:19,minZoom:3,
-        fadeAnimation:false,zoomAnimation:false,markerZoomAnimation:false,
-      });
-      this._layers=L.layerGroup().addTo(this._map);
-      this._baseLayer=this._tiles ? L.tileLayer(this._tiles,{maxZoom:19,keepBuffer:1})
-        : leafletLayer({url:new URL(this._archive,location.origin).href,flavor:"light",lang:"en",maxDataZoom:13,maxZoom:19});
-      this._baseLayer.on("tileerror",()=>{this._mapError=true;this.shadowRoot.querySelector(".status").insertAdjacentHTML("beforeend",'<span class="chip error">Map data unavailable</span>');});
-      this._baseLayer.addTo(this._map);
-      this._resize=new ResizeObserver(()=>this._map?.invalidateSize({pan:false}));
-      this._resize.observe(this.shadowRoot.querySelector(".viewport"));
     })();
-    try{await this._mapCreating;return !!this._map;}
-    catch(error){this._error=error?.message || "Map could not load";this._renderStatus();return false;}
-    finally{this._mapCreating=null;}
+    this._mapCreating=creating;
+    return creating;
   }
   _popup(current){
     return `<section class="popup"><strong>Haval</strong>${statusText(current).map(label=>`<div>${esc(label)}</div>`).join("")}
@@ -249,7 +294,7 @@ class GwmJourneyCard extends HTMLElement {
   }
   _click(event){
     const target=event.target.closest("button");if(!target || target.disabled)return;
-    if(target.hasAttribute("data-refresh")){this._registry=null;this._load();}
+    if(target.hasAttribute("data-refresh")){this._registry=null;this._load(true);}
     if(target.hasAttribute("data-fit")){this._fitNext=true;this._updateMap();}
     if(target.hasAttribute("data-locate")){
       const current=this._current();

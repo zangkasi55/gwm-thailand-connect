@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import secrets
 from dataclasses import replace
 from pathlib import Path
@@ -50,12 +51,24 @@ def password_selector(*, one_time: bool = False) -> selector.TextSelector:
 
 
 def credentials_schema(
-    method: ThailandAuthenticationMethod, account: str = "",
+    method: ThailandAuthenticationMethod, account: str = "", *, mobile_only: bool = False,
 ) -> vol.Schema:
-    fields: dict[vol.Marker, object] = {vol.Required("account", default=account): str}
+    fields: dict[vol.Marker, object] = {
+        vol.Required("account", default=account): mobile_account if mobile_only else str,
+    }
     if method is ThailandAuthenticationMethod.PASSWORD:
         fields[vol.Required("password")] = password_selector()
     return vol.Schema(fields)
+
+
+def is_mobile_account(value: object) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"\+?[0-9]{7,15}", value.strip().replace(" ", "")) is not None
+
+
+def mobile_account(value: object) -> str:
+    if not isinstance(value, str) or not is_mobile_account(value):
+        raise vol.Invalid("Use the registered mobile number, not an email address or a password")
+    return value.strip().replace(" ", "")
 
 
 def _read_material(hass: HomeAssistant, file_id: str) -> dict[str, Any]:
@@ -81,6 +94,7 @@ class GwmThailandConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._step = "code_login"
         self._default_account = ""
         self._initialization_reason = ""
+        self._mobile_only = False
 
     @staticmethod
     def async_get_options_flow(config_entry: ConfigEntry) -> GwmThailandOptionsFlow:
@@ -110,7 +124,7 @@ class GwmThailandConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "material_storage_failed"
         else:
             return self.async_show_menu(
-                step_id="authentication", menu_options=["code_login", "password_login"],
+                step_id="authentication", menu_options=["mobile_login", "code_login", "password_login"],
             )
         return self.async_show_form(
             step_id="material",
@@ -122,18 +136,33 @@ class GwmThailandConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_code_login(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         self._method = ThailandAuthenticationMethod.VERIFICATION_CODE
+        self._mobile_only = False
+        return await self._credentials_form(user_input)
+
+    async def async_step_mobile_login(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        self._method = ThailandAuthenticationMethod.VERIFICATION_CODE
+        self._mobile_only = True
         return await self._credentials_form(user_input)
 
     async def async_step_password_login(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        account = user_input.get("account") if user_input is not None else self._default_account
+        if is_mobile_account(account):
+            return await self.async_step_mobile_login(
+                {"account": account} if user_input is not None else None,
+            )
         self._method = ThailandAuthenticationMethod.PASSWORD
+        self._mobile_only = False
         return await self._credentials_form(user_input)
 
     async def _credentials_form(self, user_input: dict[str, Any] | None) -> ConfigFlowResult:
-        self._step = "password_login" if self._method is ThailandAuthenticationMethod.PASSWORD else "code_login"
+        self._step = "mobile_login" if self._mobile_only else (
+            "password_login" if self._method is ThailandAuthenticationMethod.PASSWORD else "code_login"
+        )
         if user_input is not None:
             try:
+                account = mobile_account(user_input["account"]) if self._mobile_only else user_input["account"]
                 credentials = ThailandCredentials(
-                    user_input["account"],
+                    account,
                     user_input.get("password") if self._method is ThailandAuthenticationMethod.PASSWORD else None,
                     secrets.token_hex(16), authentication_method=self._method,
                 )
@@ -157,13 +186,16 @@ class GwmThailandConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._credentials = credentials
                 self._state = state
                 self._consent = False
-            except (KeyError, TypeError, ValueError):
+            except (KeyError, TypeError, ValueError, vol.Invalid):
                 return self._show("invalid_account")
             return await self._authenticate()
         return self._show()
 
     def _show(self, error: str | None = None) -> ConfigFlowResult:
-        schema = credentials_schema(self._method, self._default_account)
+        account = self._default_account
+        if self._mobile_only and not is_mobile_account(account):
+            account = ""
+        schema = credentials_schema(self._method, account, mobile_only=self._mobile_only)
         if self._step == "consent":
             schema = vol.Schema({vol.Required("confirm", default=False): bool})
         elif self._step == "verification":

@@ -45,6 +45,7 @@ python -m pytest -q
 python -m ruff check custom_components tests scripts
 python -m mypy custom_components/gwm_thailand_connect
 npm test
+npm run test:browser
 python scripts/check_public_tree.py
 python scripts/build_release.py
 ```
@@ -52,6 +53,20 @@ python scripts/build_release.py
 HA must be imported before collection because the supported HA release initializes its schema-validation compatibility layer; `tests/conftest.py` does that.
 
 Most tests use generated synthetic RSA keys/certificates and an in-memory scripted transport. **They need no account, APK, network, PIN or car.** The three opt-in APK checks skip unless a developer explicitly provides `GWM_THAILAND_TEST_APK` pointing to their own reviewed local artifact. Do not set that variable in public CI or upload the artifact.
+
+The real-browser suite uses a generated, deterministic PMTiles/MVT archive under
+4 KB in memory. It contains fictional land and roads, not OSM or owner data.
+It exercises the actual locally bundled Leaflet/vector decoder over HTTP byte
+ranges, with all browser requests restricted to loopback. Install the browser
+once with `npx playwright install chromium` (the CI job also installs Linux OS
+dependencies), then run `npm run test:browser`. No country archive, home endpoint,
+GWM account or API key is needed.
+
+Browser regressions cover blank stale/invalid fixes, marker expiry, disconnects,
+vehicle-switch response ordering, pan/zoom preservation, archive failures,
+visible attribution and cancellation/reconnection during map initialization.
+The map tests accept at most one screen pixel of Leaflet center rounding during
+refresh; a pan reset or zoom change is not accepted.
 
 ## Reproduce manual screenshots
 
@@ -102,7 +117,8 @@ external provider while the dashboard displays a vehicle.
 
 ## CI
 
-- **Checks:** pytest, Ruff, strict mypy, Node frontend tests, public-tree scan and release packaging.
+- **Checks:** pytest, Ruff, strict mypy, Node frontend tests, isolated synthetic
+  map-browser regressions, public-tree scan and release packaging.
 - **Hassfest:** official Home Assistant integration metadata validation.
 - **HACS validation:** official `hacs/action`, with no ignored validation categories.
 - **Copilot setup steps:** prepares Python 3.14, Node 24, the declared dependencies
@@ -126,8 +142,9 @@ The current map contract is:
   collapsed by default.
 - Private history is opt-in and expires after seven rolling days.
 - Parking requires observed stop, verified whole-vehicle shutdown, driver-door
-  open and driver-door close in order. The Thai decoder still has no verified
-  shutdown producer, so that input remains unknown.
+  open and driver-door close in order. Only explicit canonical `hyEngSts` 0/1
+  values supply hybrid vehicle power. The reference car's sampled HTTP responses
+  have not reported this field; missing power remains unknown, not engine-off.
 
 Cloud development must use synthetic observations only. Do not copy a live HA
 backup, browser profile, private app artifact, provisioning JSON or owner's
@@ -135,20 +152,50 @@ coordinates into the agent environment. The generic country map is provisioned
 separately, not committed to this source repository.
 
 The prepared custom-component update passed local unit/type/lint and isolated
-browser checks. A private installation was updated and its configuration check
-passed, but the latest compact-map restart/resource/UI verification was interrupted
-when the owner paused work. That is an operator follow-up through an authorized
-HA session, not a task the cloud agent can prove without access. Do not claim it
-complete, connect to a real home endpoint, or send physical vehicle commands.
+browser checks. A separately authenticated operator has also completed the private
+installation's post-restart resource/UI verification, checked the installed file
+hashes, exercised the real same-host OSM renderer with offscreen synthetic data,
+and removed temporary deployment tooling. The actual cloud sample was stale:
+the current marker correctly remained blank. This is not proof of real physical
+movement or parking. A cloud agent must not use that operator session, connect to
+a real home endpoint, or send physical vehicle commands.
 
 The agent should open a draft PR for review, report the exact checks it ran and
 leave publication/merge/live deployment to the owner. Never claim that a cloud
 task launch is a successful live installation.
 
+### Azure VM development fallback
+
+When a cloud coding-agent entitlement is unavailable, the same sanitized branch
+can run in an owner-provisioned Azure Ubuntu VM. Keep authentication to Azure
+control-plane tools; do not open public application or SSH ports merely for
+automated development checks.
+
+The prepared environment uses `/srv/gwm/workspace`, Python 3.14.2 or newer,
+Node 24 and a boot-enabled `gwm-dev-resume.service`. Each boot resumes the
+saved synthetic validation commands and writes an explicit pass/failure receipt
+to `/srv/gwm/runs/latest.json`, with the source commit and boot ID. Existing
+packaging outputs are preserved before producing a fresh archive.
+
+VM power schedules must be external to the VM: an in-guest timer cannot restart
+a deallocated machine. The owner's native auto-shutdown and managed-identity
+startup workflow use the configured local timezone. Give the startup identity
+only read/start permission at the one VM's scope; do not grant subscription-wide
+contributor access or store an account password/API token in a scheduler.
+
+Check `systemctl status gwm-dev-resume.service` and the saved JSON/log through
+Azure Run Command to confirm a resumed run. A completed one-shot service is
+normally inactive; its receipt, not that inactive state alone, indicates success.
+The resume service reruns development validation. It does **not** automatically
+restart an AI chat, infer unfinished code changes, publish a branch, or access
+the owner's home/account. Those actions need an authorized developer session.
+
 ## Maintainer release procedure
 
 1. Run all local checks and review synthetic-only docs/screens.
-2. Update `manifest.json`, `const.py` and resource-version examples together.
+2. Update `manifest.json`, `const.py`, the main card's versioned journey-module
+   import and resource-version examples together. The publication regression
+   rejects a stale imported-module version.
 3. Commit only reviewed source with no old private history. Preserve MIT notices.
 4. Push and wait for all three CI workflows to pass without ignored checks.
 5. Create a full GitHub release, not only a tag, and attach the clean ZIP/checksums.

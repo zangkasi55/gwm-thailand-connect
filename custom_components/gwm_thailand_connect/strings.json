@@ -10,9 +10,15 @@
       "authentication": {
         "title": "Choose how to sign in",
         "menu_options": {
+          "mobile_login": "Mobile number (SMS OTP; no password)",
           "code_login": "Verification code (SMS/email; no password)",
-          "password_login": "Official-app account password"
+          "password_login": "Email with official-app account password"
         }
+      },
+      "mobile_login": {
+        "title": "Sign in with your mobile number",
+        "description": "Use the registered mobile number linked to My GWM Thailand. No account password or vehicle PIN is needed. An SMS OTP is requested only after you confirm the sign-in warning; enter the delivered code in the next private form.",
+        "data": {"account": "Registered mobile number"}
       },
       "code_login": {
         "title": "Sign in with a verification code",
@@ -21,8 +27,8 @@
       },
       "password_login": {
         "title": "Sign in with your official-app password",
-        "description": "This is the account login password, not the vehicle security PIN. GWM may require additional verification.",
-        "data": {"account": "Linked email or mobile number", "password": "Official-app account password"}
+        "description": "For email password sign-in, enter the official account login password, not the vehicle PIN. For a mobile number choose SMS OTP; mobile submissions are routed to verification-code sign-in without sending a password.",
+        "data": {"account": "Linked email", "password": "Official-app account password"}
       },
       "consent": {
         "title": "Allow this GWM account sign-in",

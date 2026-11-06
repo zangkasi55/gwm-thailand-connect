@@ -1,6 +1,6 @@
 # Haval journeys, temporary stops and parking
 
-This is a **0.3.0 development feature**, not part of the published 0.1.0 release.
+This is a **0.3.x development feature**, not part of the published 0.1.0 release.
 It records observations on your own HA host after explicit opt-in. It is not
 continuous GPS tracking, a security device or a manufacturer trip log.
 
@@ -24,11 +24,18 @@ state. PHEV combustion engines can stop while driving. Accordingly:
   between cloud updates;
 - location reporting, a valid GWM session and fresh source timestamps are needed.
 
-The current Thai decoder does not yet populate a verified `vehicle_power_off`
-signal. It deliberately does not translate raw engine code `2016001` into that
-flag. Real observations without verified power stay **parking unconfirmed**.
-The synthetic demo provides explicit fictional power transitions to exercise the
-rule; that is not evidence that the owner's cloud account supplies them.
+The decoder reads the optional top-level hybrid power field `hyEngSts`, which
+the reviewed native app uses for vehicle power separately from engine state.
+Only explicit `0`/`"0"` (off) and `1`/`"1"` (on) populate `vehicle_power_off`.
+Missing, unknown or noncanonical states remain unknown; malformed types are
+rejected. Neither service expiry, gear nor raw engine code `2016001` substitutes
+for this signal.
+
+The reference car's sampled HTTP responses have **not** supplied this field.
+Protocol support is not proof of live availability: those observations still
+remain **parking unconfirmed**. The synthetic tests exercise the real parser
+through the ordered parking rule, but are not evidence of a physical parking
+event or of the owner's cloud account reporting power.
 
 Opening this view does not wake, start, unlock or otherwise control the car.
 
@@ -97,6 +104,14 @@ stateDiagram-v2
 ```
 
 ## Stops, battery and doors
+
+The **Refresh** button requests the integration's normal cached cloud read before
+loading current status and history. It does not wake the vehicle, call
+`vehicle/findStatus`, or publish a command. An old manufacturer timestamp remains
+old; clicking Refresh never makes a stale fix current. Automatic card reloads
+continue to read the local observations without requesting an additional cloud
+read. Unloaded accounts, permission failures and unsuccessful cloud reads are
+reported explicitly.
 
 The page is map-first, with compact battery/lock/door/A/C chips and a car marker.
 Select the car for its status popup. Open **Stops** or select a numbered marker to see:

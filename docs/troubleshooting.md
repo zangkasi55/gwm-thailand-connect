@@ -12,7 +12,15 @@ Never post account contact details, VINs, location, OTPs, PINs, tokens, certific
 
 ## Password field appears in code mode
 
-The current flow uses two separate method steps. Code mode has only a contact field; password mode requires a password. After updating/restarting HA, reload the browser to clear stale frontend translations and restart the setup flow.
+Choose **Mobile number (SMS OTP; no password)** for mobile sign-in, or
+**Verification code** for a linked email contact. Both forms have only a contact
+field. Email password sign-in is a separate method; do not put a mobile number
+into a password form. Existing mobile accounts and submitted mobile numbers are
+routed to the OTP path without sending an account password.
+
+After updating/restarting HA, reload the browser and close any earlier password
+dialog before selecting the OTP method. The one-time code field is masked for
+privacy; its visibility button does not make it an account-password login.
 
 The account password, one-time verification code and vehicle security PIN are three different credentials.
 
