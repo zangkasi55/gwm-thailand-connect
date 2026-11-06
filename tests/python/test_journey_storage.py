@@ -15,6 +15,22 @@ from tests.python.test_integration import hass as hass
 from tests.python.test_journey import NOW, sample
 
 
+@pytest.fixture(autouse=True)
+def synthetic_timer_clock(monkeypatch):
+    # Schedule real HA timers relative to the synthetic observations, not today's date.
+    monkeypatch.setattr("homeassistant.helpers.event.time.time", lambda: NOW.timestamp())
+
+
+def test_expiry_timer_waits_the_full_seven_day_window():
+    loop = Mock()
+    loop.time.return_value = 0
+    cancel = journey_storage.async_track_point_in_utc_time(
+        SimpleNamespace(loop=loop), Mock(), NOW + timedelta(days=7),
+    )
+    assert loop.call_at.call_args.args[0] == timedelta(days=7).total_seconds()
+    cancel()
+
+
 def snapshot(seconds=0, **changes):
     observation = sample(seconds, **changes)
     return {

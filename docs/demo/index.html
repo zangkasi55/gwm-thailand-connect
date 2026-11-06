@@ -26,7 +26,7 @@
   const screen = new URLSearchParams(location.search).get("screen") || "method";
   const content = document.querySelector("#content");
   const form = (title, body, button="Submit") => `<section class="form"><header>${title}</header><div class="body">${body}</div><footer><button disabled>${button} — demo only</button></footer></section>`;
-  const contact = `<label>Linked email or mobile number *</label><input value="demo@example.invalid" readonly><div class="help">Synthetic example contact. Never post your real contact or private provisioning file in an issue.</div>`;
+  const contact = `<label>Linked email *</label><input value="demo@example.invalid" readonly><div class="help">Synthetic example contact. Never post your real contact or private provisioning file in an issue.</div>`;
   const forms = {
     material: form("Import private Thai app material", `<p>Generate the private provisioning JSON locally from your own reviewed official APK.</p><label>Private provisioning JSON *</label><input value="app-material.example.json (illustration only)" readonly><div class="note">The APK, JSON, application secrets and private keys are NOT published or included in the release.</div>`),
     method: form("Choose how to sign in", `<p>Mobile-number login uses SMS OTP, not a password.</p><a class="choice" href="?screen=code">Mobile number (SMS OTP; no password) →</a><a class="choice" href="?screen=code">Verification code (SMS/email; no password) →</a><a class="choice" href="?screen=password">Email with official-app account password →</a>`),

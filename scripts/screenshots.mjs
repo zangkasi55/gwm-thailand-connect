@@ -63,7 +63,11 @@ try {
       assert.equal(await page.locator("input[type=password]").count(),0);
       assert.match(await page.locator(".body").innerText(),/SMS OTP/);
     }
-    if(screen==="password")assert.equal(await page.locator("input[type=password]").count(),1);
+    if(screen==="password"){
+      assert.equal(await page.locator("input[type=password]").count(),1);
+      assert.match(await page.locator(".body").innerText(),/Linked email \*/);
+      assert.doesNotMatch(await page.locator(".body").innerText(),/Linked email or mobile number/);
+    }
     if(["dashboard","confirmation"].includes(screen)) await page.locator("gwm-thailand-card .gauge").waitFor({state:"attached"});
     if(screen==="confirmation") await page.locator("gwm-thailand-card [role=dialog]").waitFor();
     await page.screenshot({path:resolve(output,screen+".png"),fullPage:true});
